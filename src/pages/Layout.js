@@ -2,11 +2,15 @@ import React from "react";
 import Sidebar from "../components/Sidebar";
 import Feed from "../components/Feed";
 import Discover from "../components/Discover";
+import Navbar from "../components/Navbar";
 
 const Layout = () => {
   return (
-    <div>
-      <div className="flex mx-4 mt-4">
+    <div className="flex flex-col mx-4 mt-4">
+      <div>
+        <Navbar />
+      </div>
+      <div className="flex">
         <div className="w-1/5">
           <Sidebar />
         </div>
