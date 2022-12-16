@@ -6,15 +6,15 @@ import Navbar from "../components/Navbar";
 
 const Layout = () => {
   return (
-    <div className="flex flex-col mx-4 mt-4">
+    <div className="flex flex-col mx-4 mt-4 h-max">
       <div>
         <Navbar />
       </div>
-      <div className="flex">
+      <div className="flex w-full">
         <div className="w-1/5">
           <Sidebar />
         </div>
-        <div className="w-3/5">
+        <div className="w-3/5 ">
           <Feed />
         </div>
         <div className="w-1/5">

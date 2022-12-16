@@ -13,7 +13,7 @@ import { BsThreeDots } from "react-icons/bs";
 const Feed = () => {
   return (
     <>
-      <section className="p-[1rem] bg-[#f5f7fb] rounded-md">
+      <section className="p-[1rem] bg-[#f5f7fb] rounded-md overflow-auto max-h-full">
         <div className="bg-white flex p-5 gap-4 rounded-md justify-center">
           <div className="mt-[0.40rem]">
             <img
@@ -54,6 +54,106 @@ const Feed = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-md p-5 justify-center mt-4">
+          <div className="flex mt-[0.40rem] items-center gap-3">
+            <img
+              className="w-[2.15rem] h-[2.1rem] rounded-full object-cover"
+              src="./assets/images/user2.jfif"
+              alt="user"
+            />
+            <div className="flex justify-between w-full align-top">
+              <div className="flex gap-4">
+                <div>
+                  <p>John Doe</p>
+                  <p className="text-[0.75rem] text-gray-500">@JohnDoe</p>
+                </div>
+                <div>
+                  <span className="text-[0.75rem]">2 hours ago</span>
+                </div>
+              </div>
+              <button>
+                <BsThreeDots />
+              </button>
+            </div>
+          </div>
+          <div className="pt-2">
+            <div>
+              <p>Happy Christmas !!!</p>
+            </div>
+            <div>
+              <img
+                className="w-full h-[25rem] rounded-md object-cover mt-4"
+                src="./assets/images/img1.jpg"
+                alt="post"
+              />
+            </div>
+          </div>
+          <div className="flex mt-5 justify-between px-4 text-gray-600">
+            <button>
+              <AiOutlineHeart size={25} />
+            </button>
+            <button>
+              <AiOutlineComment size={25} />
+            </button>
+            <button>
+              <FiBookmark size={25} />
+            </button>
+
+            <button>
+              <FiShare2 size={25} />
+            </button>
+          </div>
+        </div>
+        <div className="bg-white rounded-md p-5 justify-center mt-4">
+          <div className="flex mt-[0.40rem] items-center gap-3">
+            <img
+              className="w-[2.15rem] h-[2.1rem] rounded-full object-cover"
+              src="./assets/images/user2.jfif"
+              alt="user"
+            />
+            <div className="flex justify-between w-full align-top">
+              <div className="flex gap-4">
+                <div>
+                  <p>John Doe</p>
+                  <p className="text-[0.75rem] text-gray-500">@JohnDoe</p>
+                </div>
+                <div>
+                  <span className="text-[0.75rem]">2 hours ago</span>
+                </div>
+              </div>
+              <button>
+                <BsThreeDots />
+              </button>
+            </div>
+          </div>
+          <div className="pt-2">
+            <div>
+              <p>Happy Christmas !!!</p>
+            </div>
+            <div>
+              <img
+                className="w-full h-[25rem] rounded-md object-cover mt-4"
+                src="./assets/images/img1.jpg"
+                alt="post"
+              />
+            </div>
+          </div>
+          <div className="flex mt-5 justify-between px-4 text-gray-600">
+            <button>
+              <AiOutlineHeart size={25} />
+            </button>
+            <button>
+              <AiOutlineComment size={25} />
+            </button>
+            <button>
+              <FiBookmark size={25} />
+            </button>
+
+            <button>
+              <FiShare2 size={25} />
+            </button>
           </div>
         </div>
         <div className="bg-white rounded-md p-5 justify-center mt-4">
