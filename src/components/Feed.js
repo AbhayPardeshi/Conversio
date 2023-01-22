@@ -13,7 +13,7 @@ import { BsThreeDots } from "react-icons/bs";
 const Feed = () => {
   return (
     <>
-      <section className="p-[1rem] bg-[#f5f7fb] rounded-md overflow-auto max-h-full">
+      <section className="p-[1rem] bg-[#f5f7fb] rounded-md">
         <div className="bg-white flex p-5 gap-4 rounded-md justify-center">
           <div className="mt-[0.40rem]">
             <img
