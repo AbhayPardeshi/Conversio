@@ -44,13 +44,12 @@ const Sidebar = () => {
 
         <div className="mt-4">
           <ul>
-            <li className="flex flex-row gap-3 items-center hover:bg-blue-600 hover:text-gray-100 cursor-pointer rounded-md p-2">
-              <span>
+            <li className="flex flex-row gap-3 items-center text-gray-500  hover:bg-blue-600 hover:text-gray-100 cursor-pointer rounded-md p-2">
+              <span className="text-gray-900">
                 <AiOutlineAppstore />
               </span>
-              <div>
-                <h3 className="text-gray-500 py-1 hover:text-gray-100">Feed</h3>
-              </div>
+
+              <h3 className="py-1">Feed</h3>
             </li>
             <li className="flex flex-row gap-3 items-center hover:bg-blue-600  hover:text-gray-100 cursor-pointer rounded-md p-2">
               <span>

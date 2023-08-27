@@ -4,6 +4,7 @@ import Feed from "../components/Feed";
 import Discover from "../components/Discover";
 import Navbar from "../components/Navbar";
 
+
 const Layout = () => {
   return (
     <div className="flex flex-col mx-4 mt-4">

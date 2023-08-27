@@ -9,8 +9,8 @@ const Navbar = () => {
       <div className="flex items-center mb-4">
         <div className="flex flex-col items-center w-1/5">
           <img
-            className="w-48 h-16 rounded-full"
-            src="./Assets/images/logo.png"
+            className="w-48 h-12 p-2 "
+            src="./Assets/images/name.png"
             alt="profile"
           />
         </div>
