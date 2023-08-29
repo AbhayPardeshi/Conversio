@@ -5,13 +5,16 @@ import {
   AiOutlineAudio,
   AiOutlineHeart,
   AiOutlineComment,
+  AiFillHeart,
 } from "react-icons/ai";
 import { FiBookmark, FiShare2 } from "react-icons/fi";
 import { IoMdAttach } from "react-icons/io";
 import { BsThreeDots } from "react-icons/bs";
+import { BsFillBookmarkFill } from "react-icons/bs";
 
 const Feed = () => {
   const fileInputRef = useRef(null);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const initialState = [];
   const [post, setPost] = useState(initialState);
   const [postText, setPostText] = useState("");
@@ -28,7 +31,6 @@ const Feed = () => {
     setPostText("");
     setPostImage("");
     setImagePreview("");
-    
   };
   const setPostTextHandler = (e) => {
     setPostText(e.target.value);
@@ -44,6 +46,37 @@ const Feed = () => {
   const openFileInput = () => {
     fileInputRef.current.click();
   };
+
+  const handleLikeClick = (postId) => {
+    setPost((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              liked: !post.liked,
+            }
+          : post
+      )
+    );
+  };
+  const handleBookmarkClick = (postId) => {
+    setPost((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              bookmarked: !post.bookmarked,
+            }
+          : post
+      )
+    );
+  };
+
+  const toggleDropdown = () => {
+    setIsDropdownVisible(!isDropdownVisible);
+    console.log(isDropdownVisible);
+  };
+
   return (
     <>
       <section className="p-[1rem] bg-[#f5f7fb] rounded-md">
@@ -107,6 +140,7 @@ const Feed = () => {
                 <AiOutlineVideoCamera />
                 <p>Video/Gif</p>
               </button>
+
               <button className="flex text-[0.85rem] px-2 py-1 rounded-md items-center gap-x-2">
                 <IoMdAttach />
                 <p>Attachements</p>
@@ -148,32 +182,57 @@ const Feed = () => {
                       <span className="text-[0.75rem]">2 hours ago</span>
                     </div>
                   </div>
-                  <button>
-                    <BsThreeDots />
-                  </button>
+
+                  {isDropdownVisible ? (
+                    <div className="dropdown-content">
+                      <p>Delete Post</p>
+                    </div>
+                  ) : (
+                    <button onClick={toggleDropdown}>
+                      <BsThreeDots />
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="pt-2">
                 <div>
                   <p key={item.index}>{item.text}</p>
                 </div>
-                <div>
-                  <img
-                    className="w-full h-[25rem] rounded-md object-cover mt-4"
-                    src={item.imageURL}
-                    alt="post"
-                  />
-                </div>
+                {item.imageURL && (
+                  <div>
+                    <img
+                      className="w-full h-[25rem] rounded-md object-cover mt-4"
+                      src={item.imageURL}
+                      alt="post"
+                    />
+                  </div>
+                )}
               </div>
               <div className="flex mt-5 justify-between px-4 text-gray-600">
-                <button>
-                  <AiOutlineHeart size={25} />
+                <button
+                  onClick={() => {
+                    handleLikeClick(item.id);
+                  }}
+                >
+                  {item.liked ? (
+                    <AiFillHeart size={25} color="red" />
+                  ) : (
+                    <AiOutlineHeart size={25} />
+                  )}
                 </button>
                 <button>
                   <AiOutlineComment size={25} />
                 </button>
-                <button>
-                  <FiBookmark size={25} />
+                <button
+                  onClick={() => {
+                    handleBookmarkClick(item.id);
+                  }}
+                >
+                  {item.bookmarked ? (
+                    <BsFillBookmarkFill size={25} color="gray" />
+                  ) : (
+                    <FiBookmark size={25} />
+                  )}
                 </button>
 
                 <button>
