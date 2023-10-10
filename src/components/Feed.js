@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef,useEffect } from "react";
 import { ImImage } from "react-icons/im";
 import {
   AiOutlineVideoCamera,
@@ -27,7 +27,10 @@ const Feed = () => {
       text: postText,
       imageURL: postImage,
     };
-    setPost([...post, newPost]);
+
+    sendData(newPost);
+    // setPost([...post, newPost]);
+
     setPostText("");
     setPostImage("");
     setImagePreview("");
@@ -77,9 +80,39 @@ const Feed = () => {
     console.log(isDropdownVisible);
   };
 
+  const sendData = (newPost) => {
+    const apiUrl = 'http://localhost:3001/posts';
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newPost),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('Success:', data);
+        setPost([...post, data]);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  }
+
+   useEffect(() => {
+     // Fetch posts from the API
+     fetch("http://localhost:3001/posts")
+       .then((response) => response.json())
+       .then((data) => {
+         setPost(data);
+       })
+       .catch((error) => {
+         console.error("Error fetching posts:", error);
+       });
+   }, []);
   return (
     <>
-      <section className="p-[1rem] bg-[#f5f7fb] rounded-md">
+      <section className="p-[1rem]  rounded-md">
         {/* Post Area */}
         <div className="bg-white flex p-5 gap-4 rounded-md justify-center">
           <div className="mt-[0.40rem]">

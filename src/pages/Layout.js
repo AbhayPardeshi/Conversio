@@ -15,7 +15,7 @@ const Layout = () => {
         <div className="w-1/5">
           <Sidebar />
         </div>
-        <div className="w-3/5 h-max-screen overflow-auto">
+        <div className="w-3/5 h-max-screen overflow-auto bg-[#f5f7fb]">
           <Feed />
         </div>
         <div className="w-1/5">
