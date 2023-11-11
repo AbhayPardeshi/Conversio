@@ -1,4 +1,4 @@
-import React, { useState, useRef,useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ImImage } from "react-icons/im";
 import {
   AiOutlineVideoCamera,
@@ -14,12 +14,11 @@ import { BsFillBookmarkFill } from "react-icons/bs";
 
 const Feed = () => {
   const fileInputRef = useRef(null);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const initialState = [];
-  const [post, setPost] = useState(initialState);
+  const [post, setPost] = useState([]);
   const [postText, setPostText] = useState("");
   const [postImage, setPostImage] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(null);
 
   const setPostHandler = () => {
     const newPost = {
@@ -75,41 +74,66 @@ const Feed = () => {
     );
   };
 
-  const toggleDropdown = () => {
-    setIsDropdownVisible(!isDropdownVisible);
-    console.log(isDropdownVisible);
+  //  const toggleDropdown = (postId) => {
+  //    setIsDropdownVisible((prevVisibleDropdowns) => {
+  //      const isVisible = prevVisibleDropdowns.includes(postId);
+  //      return isVisible
+  //        ? prevVisibleDropdowns.filter((id) => id !== postId)
+  //        : [...prevVisibleDropdowns, postId];
+  //    });
+  //  };
+
+  const toggleDropdown = (postId) => {
+    setIsDropdownVisible((prevVisibleDropdown) =>
+      prevVisibleDropdown === postId ? null : postId
+    );
   };
 
   const sendData = (newPost) => {
-    const apiUrl = 'http://localhost:3001/posts';
+    const apiUrl = "http://localhost:3001/posts";
     fetch(apiUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(newPost),
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log('Success:', data);
+        console.log("Success:", data);
         setPost([...post, data]);
       })
       .catch((error) => {
-        console.error('Error:', error);
+        console.error("Error:", error);
       });
-  }
+  };
 
-   useEffect(() => {
-     // Fetch posts from the API
-     fetch("http://localhost:3001/posts")
-       .then((response) => response.json())
-       .then((data) => {
-         setPost(data);
-       })
-       .catch((error) => {
-         console.error("Error fetching posts:", error);
-       });
-   }, []);
+  const deletePost = (postId) => {
+    const apiUrl = `http://localhost:3001/posts/${postId}`;
+    fetch(apiUrl, {
+      method: "DELETE",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data);
+        setPost((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+
+  useEffect(() => {
+    // Fetch posts from the API
+    fetch("http://localhost:3001/posts")
+      .then((response) => response.json())
+      .then((data) => {
+        setPost(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching posts:", error);
+      });
+  }, []);
   return (
     <>
       <section className="p-[1rem]  rounded-md">
@@ -215,16 +239,29 @@ const Feed = () => {
                       <span className="text-[0.75rem]">2 hours ago</span>
                     </div>
                   </div>
-
-                  {isDropdownVisible ? (
-                    <div className="dropdown-content">
-                      <p>Delete Post</p>
-                    </div>
-                  ) : (
-                    <button onClick={toggleDropdown}>
+                  <div className="relative inline-block">
+                    <button
+                      onClick={() => {
+                        toggleDropdown(item.id);
+                      }}
+                      className=" text-black py-2 px-4 rounded focus:outline-none"
+                    >
                       <BsThreeDots />
                     </button>
-                  )}
+                    {isDropdownVisible === item.id && (
+                      <div className="dropdown-content absolute bg-white font-semibold border rounded shadow-md right-3 top-[25px] min-w-[80px]">
+                        <p
+                          className="p-2 hover:bg-gray-100 cursor-pointer text-xs "
+                          onClick={() => deletePost(item.id)}
+                        >
+                          Delete Post
+                        </p>
+                        <p className="p-2 hover:bg-gray-100 cursor-pointer text-xs">
+                          Edit Post
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="pt-2">
