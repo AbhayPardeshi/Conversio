@@ -10,7 +10,7 @@ const Sidebar = () => {
   return (
     <div className="h-screen px-[1rem]">
       <div className="flex flex-col ">
-        <div className="flex flex-col gap-y-2 bg-[#f5f7fb] p-4 rounded-lg">
+        {/* <div className="flex flex-col gap-y-2 bg-[#f5f7fb] p-4 rounded-lg">
           <div className="flex flex-row gap-3">
             <img
               className="w-[2.65rem] h-[2.5rem] rounded-full object-cover"
@@ -41,7 +41,43 @@ const Sidebar = () => {
             </span>
           </div>
         </div>
+        <div className="flex items-center justify-between">
+          <div className="flex gap-2">
+            <img
+              className="rounded-full object-cover "
+              src="./assets/images/user2.jfif"
+              alt="user"
+            />
+            <div>
+              <p className="text-[0.95rem]">John Doe</p>
+              <p className="text-[0.60rem] text-gray-500">@JohnDoe</p>
+            </div>
+          </div>
+          <button className="bg-blue-600 px-3 rounded-2xl text-white py-1 text-[0.8rem]">
+            Follow
+          </button>
+        </div> */}
+        {/* <div className="flex justify-center items-center">
+          <img
+            className="w-[2.65rem] h-[2.5rem] rounded-full object-cover cursor-pointer"
+            src="./assets/images/user1.jfif"
+            alt="user"
+          />
+          <div className="flex flex-col justify-center items-center ml-[2rem]">
+            <p className="text-black font-bold text-[1.5rem]">John Doe</p>
+            <p className="text-gray-400 text-[0.85rem]">@johndoe</p>
 
+            <div className="flex justify-center items-center mt-[1rem]">
+              <button className="bg-blue-600 text-white rounded-2xl px-4 py-1 text-[0.85rem]">
+                Follow
+              </button>
+
+              <button className="bg-gray-200 text-black rounded-2xl px-4 py-1 text-[0.85rem] ml-[1rem]">
+                Message
+              </button>
+            </div> 
+        //  </div> 
+        //</div> */}
         <div className="mt-4">
           <ul>
             <li className="flex flex-row gap-3 items-center text-gray-500  hover:bg-blue-600 hover:text-gray-100 cursor-pointer rounded-md p-2">

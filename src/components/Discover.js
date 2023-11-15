@@ -39,22 +39,7 @@ const Discover = () => {
               Follow
             </button>
           </div>
-          <div className="flex items-center justify-between">
-            <div className="flex gap-2">
-              <img
-                className="w-[2.15rem] h-[2.1rem] rounded-full object-cover "
-                src="./assets/images/user2.jfif"
-                alt="user"
-              />
-              <div>
-                <p className="text-[0.95rem]">John Doe</p>
-                <p className="text-[0.60rem] text-gray-500">@JohnDoe</p>
-              </div>
-            </div>
-            <button className="bg-blue-600 px-3 rounded-2xl text-white py-1 text-[0.8rem]">
-              Follow
-            </button>
-          </div>
+        
         </div>
         <p>Show More</p>
       </div>

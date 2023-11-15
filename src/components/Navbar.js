@@ -1,9 +1,13 @@
 import React from "react";
+import { useState } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 import { TbMessage2 } from "react-icons/tb";
-import { IoMdNotificationsOutline, IoMdArrowDropdown } from "react-icons/io";
+import { IoMdNotificationsOutline } from "react-icons/io";
+import ProfilePage from "./Profile/ProfilePage";
+
 
 const Navbar = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
     <>
       <div className="flex items-center mb-4">
@@ -36,6 +40,7 @@ const Navbar = () => {
                 1
               </span>
             </div>
+
             <div className="mr-2 relative">
               <IoMdNotificationsOutline size={22} />
               <span className="w-[2px] h-[2px] p-2 bg-red-500 rounded-full absolute left-[1rem] bottom-[1.05rem] text-gray-200 text-[10px] font-bold flex justify-center items-center shadow-2xl shadow-red-400/50">
@@ -43,15 +48,19 @@ const Navbar = () => {
               </span>
             </div>
           </div>
+
           <div className="flex w-1/2 justify-end gap-1">
-            <img
-              className="w-[2.35rem] h-[2.15rem] rounded-full object-cover"
-              src="./assets/images/user1.jfif"
-              alt="user"
+            
+              <img
+                className="w-[2.35rem] h-[2.15rem] rounded-full object-cover cursor-pointer"
+                src="./assets/images/user1.jfif"
+                alt="user"
+                onClick={() => setIsModalOpen(true)}
+              />
+            <ProfilePage
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)} 
             />
-            <span className="mt-[8px] cursor-pointer">
-              <IoMdArrowDropdown />
-            </span>
           </div>
         </div>
       </div>

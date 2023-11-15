@@ -153,7 +153,7 @@ const Feed = () => {
               cols="55"
               rows="3"
               placeholder="Find friends, communities and pages here"
-              className="outline-none text-[0.65rem] mx-1 bg-[#f5f7fb] w-full p-3 rounded-2xl flex items-center"
+              className="outline-none text-[0.65rem] mx-1 bg-[#f5f7fb] w-full p-3 rounded-2xl flex items-center resize-none"
               onChange={setPostTextHandler}
               value={postText}
             />
