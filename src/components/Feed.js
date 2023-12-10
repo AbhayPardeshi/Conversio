@@ -11,15 +11,25 @@ import { FiBookmark, FiShare2 } from "react-icons/fi";
 import { IoMdAttach } from "react-icons/io";
 import { BsThreeDots } from "react-icons/bs";
 import { BsFillBookmarkFill } from "react-icons/bs";
+import { useFetch } from "../services/useFetch";
+import { usePost } from "../contexts/posts/PostProvider";
+import creationTime from "../utils/creationTime";
 
 const Feed = () => {
   const fileInputRef = useRef(null);
-  const [post, setPost] = useState([]);
   const [postText, setPostText] = useState("");
   const [postImage, setPostImage] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [isDropdownVisible, setIsDropdownVisible] = useState(null);
-
+  const {
+    posts,
+    setPosts,
+    sendData,
+    serverResponse,
+    deletePost,
+    postDispatch,
+  } = usePost();
+  console.log(posts);
   const setPostHandler = () => {
     const newPost = {
       id: new Date().getTime().toString(),
@@ -28,8 +38,6 @@ const Feed = () => {
     };
 
     sendData(newPost);
-    // setPost([...post, newPost]);
-
     setPostText("");
     setPostImage("");
     setImagePreview("");
@@ -50,7 +58,7 @@ const Feed = () => {
   };
 
   const handleLikeClick = (postId) => {
-    setPost((prevPosts) =>
+    setPosts((prevPosts) =>
       prevPosts.map((post) =>
         post.id === postId
           ? {
@@ -62,7 +70,7 @@ const Feed = () => {
     );
   };
   const handleBookmarkClick = (postId) => {
-    setPost((prevPosts) =>
+    setPosts((prevPosts) =>
       prevPosts.map((post) =>
         post.id === postId
           ? {
@@ -74,66 +82,12 @@ const Feed = () => {
     );
   };
 
-  //  const toggleDropdown = (postId) => {
-  //    setIsDropdownVisible((prevVisibleDropdowns) => {
-  //      const isVisible = prevVisibleDropdowns.includes(postId);
-  //      return isVisible
-  //        ? prevVisibleDropdowns.filter((id) => id !== postId)
-  //        : [...prevVisibleDropdowns, postId];
-  //    });
-  //  };
-
   const toggleDropdown = (postId) => {
     setIsDropdownVisible((prevVisibleDropdown) =>
       prevVisibleDropdown === postId ? null : postId
     );
   };
 
-  const sendData = (newPost) => {
-    const apiUrl = "http://localhost:3001/posts";
-    fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newPost),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Success:", data);
-        setPost([...post, data]);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  };
-
-  const deletePost = (postId) => {
-    const apiUrl = `http://localhost:3001/posts/${postId}`;
-    fetch(apiUrl, {
-      method: "DELETE",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Success:", data);
-        setPost((prevPosts) => prevPosts.filter((post) => post.id !== postId));
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  };
-
-  useEffect(() => {
-    // Fetch posts from the API
-    fetch("http://localhost:3001/posts")
-      .then((response) => response.json())
-      .then((data) => {
-        setPost(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching posts:", error);
-      });
-  }, []);
   return (
     <>
       <section className="p-[1rem]  rounded-md">
@@ -220,7 +174,7 @@ const Feed = () => {
         {/* Post Area End */}
 
         {/* List of All Post */}
-        {post.map((item, index) => {
+        {posts.map((item, index) => {
           return (
             <div className="bg-white rounded-md p-5 justify-center mt-4">
               <div className="flex mt-[0.40rem] items-center gap-3">
@@ -236,7 +190,9 @@ const Feed = () => {
                       <p className="text-[0.75rem] text-gray-500">@JohnDoe</p>
                     </div>
                     <div>
-                      <span className="text-[0.75rem]">2 hours ago</span>
+                      <span className="text-[0.75rem]">
+                        {creationTime(item.date)}
+                      </span>
                     </div>
                   </div>
                   <div className="relative inline-block">
