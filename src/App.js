@@ -3,16 +3,17 @@ import Layout from "./pages/Layout";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import ProfilePage from "./components/Profile/ProfilePage";
 import SignInPage from "./components/authentication/SignInPage";
+import LoginPage from "./components/authentication/LoginPage";
 function App() {
   return (
     <div className="App">
-      <Router>
-        <Routes>
-          <Route path="/" element={<Layout />} ></Route>
-          {/* <Route path="/profile" element={<ProfilePage />} /> */}
-          <Route path="/signin" element={<SignInPage />} />
-        </Routes>
-      </Router>
+      <Routes>
+        <Route path="/" element={<Layout />} />
+        {/* <Route path="/profile" element={<ProfilePage />} /> */}
+        <Route path="/signin" element={<SignInPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        {/* <Route path="/example" element={<Example />} /> */}
+      </Routes>
     </div>
   );
 }

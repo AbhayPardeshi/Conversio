@@ -1,6 +1,15 @@
-import { useReducer, useState, useContext, createContext } from "react";
+import {
+  useReducer,
+  useState,
+  useContext,
+  createContext,
+  useEffect,
+} from "react";
 import authReducer from "./authReducer";
 import { useFetch } from "../../services/useFetch";
+import  {Toast}  from "../../services/Toast";
+import { useNavigate } from "react-router-dom";
+
 const initialUserAuthState = {
   user: {},
   encodedToken: null,
@@ -21,7 +30,7 @@ const AuthProvider = ({ children }) => {
     authReducer,
     initialUserAuthState
   );
-
+  const navigate = useNavigate();
   const [apiData, setApiData] = useState(initialApiData);
   const { apiURL, method, postMethodData, encodedToken } = apiData;
 
@@ -33,19 +42,49 @@ const AuthProvider = ({ children }) => {
   );
   const signinHandler = (data) => {
     if (data) {
-      setApiData((prev)=>{
-        return{
+      setApiData((prev) => {
+        return {
           ...prev,
-          apiURL:"/auth/signin",
-          method:"POST",
-          postMethodData:{...data}
-        }
-      })
+          apiURL: "/auth/signin",
+          method: "POST",
+          postMethodData: { ...data },
+        };
+      });
     }
   };
 
+  const loginHandler = (data) => {
+    if (data) {
+      setApiData((prev) => {
+        return {
+          ...prev,
+          apiURL: "/auth/login",
+          method: "POST",
+          postMethodData: { ...data },
+        };
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (serverResponse) {
+      
+      if (serverResponse.data.action === "signup") {
+        Toast({
+          type: "success",
+          msg: "Account created successfully",
+        });
+        
+        setTimeout(() => {
+          navigate("/login");
+        }, 200);
+      }
+      
+    }
+  }, [serverResponse]);
+
   return (
-    <AuthContext.Provider value={{ signinHandler }}>
+    <AuthContext.Provider value={{ signinHandler, loginHandler }}>
       {children}
     </AuthContext.Provider>
   );

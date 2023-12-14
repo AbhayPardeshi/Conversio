@@ -2,12 +2,12 @@ import React from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/auth/AuthProvider";
-const SignInPage = () => {
-  const [name, setName] = useState("");
+const LoginPage = () => {
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const { signinHandler } = useAuth();
+  const { loginHandler } = useAuth();
 
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
@@ -17,21 +17,16 @@ const SignInPage = () => {
     setPassword(event.target.value);
   };
 
-  const handleNameChange = (event) => {
-    setName(event.target.value);
-  };
-
   const handleSubmit = (event) => {
     event.preventDefault();
 
     const data = {
-      name,
       email,
       password,
     };
 
-    signinHandler(data);
-    setName("");
+    loginHandler(data);
+ 
     setEmail("");
     setPassword("");
   };
@@ -46,23 +41,13 @@ const SignInPage = () => {
         />
       </div>
       <div className="flex-1 p-[20px] bg-[#f4f4f4] flex flex-col justify-center items-center box-border">
-        <div className="w-[350px] h-[450px] bg-white p-2 items-center flex flex-col gap-4">
+        <div className="w-[350px] h-[350px] bg-white p-2 items-center flex flex-col gap-4">
           <div className="flex items-center flex-col">
-            <p className="font-bold text-gray-900 text-[1.5rem]">SignUp</p>
+            <p className="font-bold text-gray-900 text-[1.5rem]">Login</p>
             <div className="w-[5rem] border-blue-500 border-b-2 mt-1 rounded-xl"></div>
           </div>
           <form onSubmit={handleSubmit} className="flex flex-col w-[250px]">
-            <label htmlFor="email">UserName:</label>
-            <input
-              type="text"
-              id="text"
-              name="text"
-              value={name}
-              onChange={handleNameChange}
-              className=" border-gray-400 p-2 border-b-2 outline-none text-sm"
-              required
-            />
-            <br />
+           
             <label htmlFor="email">Email:</label>
             <input
               type="email"
@@ -89,17 +74,17 @@ const SignInPage = () => {
               type="submit"
               className="bg-blue-600 text-white rounded-2xl px-1 py-1 text-[0.85rem] uppercase w-[100px] mx-auto"
             >
-              Signup
+              Login
             </button>
           </form>
           <p>{message}</p>
           <p>
-            Already have an account?{" "}
+            Haven't registered yet?{" "}
             <Link
-              to="/login"
+              to="/signin"
               className="text-cyan-800 hover:text-blue-600 hover:underline"
             >
-              Login
+              Signup
             </Link>
           </p>
         </div>
@@ -108,4 +93,4 @@ const SignInPage = () => {
   );
 };
 
-export default SignInPage;
+export default LoginPage;
