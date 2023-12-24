@@ -7,13 +7,14 @@ import {
 } from "react";
 import authReducer from "./authReducer";
 import { useFetch } from "../../services/useFetch";
-import  {Toast}  from "../../services/Toast";
+import { Toast } from "../../services/Toast";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 const initialUserAuthState = {
   user: {},
   encodedToken: null,
-  isLoggedIn: false,
+  isUserLoggedIn: false,
 };
 
 const initialApiData = {
@@ -65,26 +66,66 @@ const AuthProvider = ({ children }) => {
       });
     }
   };
-
+  
   useEffect(() => {
     if (serverResponse) {
-      
       if (serverResponse.data.action === "signup") {
         Toast({
           type: "success",
           msg: "Account created successfully",
         });
-        
-        setTimeout(() => {
-          navigate("/login");
-        }, 200);
+
+        navigate("/login");
+      } else if (serverResponse.data.action === "login") {
+        const token = serverResponse.data.encodedToken;
+        const decodedToken = jwtDecode(token, process.env.USER_PWD_SECRET);
+
+        userAuthDispatch({
+          type: "LOGIN",
+          payload: { encodedToken, user: { ...decodedToken } },
+        });
+        localStorage.setItem("token", token);
+
+        Toast({
+          type: "success",
+          msg: `Logged in as ${decodedToken._doc.name}`,
+        });
+
+        navigate("/");
       }
-      
     }
   }, [serverResponse]);
 
+  useEffect(() => {
+    let setTimeOutId;
+    setTimeOutId = setTimeout(() => {
+      const encodedTokenTemp = localStorage.getItem("token");
+      if (encodedTokenTemp) {
+        const decodedToken = jwtDecode(
+          encodedTokenTemp,
+          process.env.REACT_APP_JWT_SECRET
+        );
+        userAuthDispatch({
+          type: "LOGIN",
+          payload: {
+            isUserLoggedIn: true,
+            encodedToken: encodedTokenTemp,
+            user: { ...decodedToken },
+          },
+        });
+        Toast({
+          type: "success",
+          msg: `Logged in as ${decodedToken._doc.name}`,
+        });
+      }
+    });
+    return () => clearTimeout(setTimeOutId);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ signinHandler, loginHandler }}>
+    <AuthContext.Provider
+      value={{ signinHandler, loginHandler, userAuthState }}
+    >
       {children}
     </AuthContext.Provider>
   );

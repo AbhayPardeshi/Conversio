@@ -6,7 +6,6 @@ import {
 } from "date-fns";
 
 const creationTime = (postDate) => {
-  console.log(postDate);
   const minutesDifference = differenceInMinutes(new Date(), new Date(postDate));
   const hoursDifference = differenceInHours(new Date(), new Date(postDate));
 

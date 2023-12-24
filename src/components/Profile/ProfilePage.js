@@ -2,11 +2,14 @@ import React from "react";
 import { IoMdClose } from "react-icons/io";
 import { MdOutlineCameraEnhance } from "react-icons/md";
 import { useRef } from "react";
+import { useAuth } from "../../contexts/auth/AuthProvider";
 const ProfilePage = ({ isOpen, onClose }) => {
   const filePickerRef = useRef();
 
+  const {userAuthState } = useAuth();
+  const user = userAuthState.user._doc;
+  
   const [image, setImage] = React.useState(null);
-
   const handleImageChange = (e) => {
     const reader = new FileReader();
     reader.onload = () => {

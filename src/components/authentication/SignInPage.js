@@ -38,7 +38,7 @@ const SignInPage = () => {
 
   return (
     <div className="h-screen flex ">
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1">
         <img
           src="https://cdn.dribbble.com/users/2329333/screenshots/9291756/media/8323473b3e37df82514c281a506ecf31.png?resize=450x338&vertical=center"
           alt="logo"

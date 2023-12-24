@@ -29,7 +29,7 @@ const Feed = () => {
     deletePost,
     postDispatch,
   } = usePost();
-  console.log(posts);
+  
   const setPostHandler = () => {
     const newPost = {
       id: new Date().getTime().toString(),

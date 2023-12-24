@@ -24,9 +24,7 @@ const LoginPage = () => {
       email,
       password,
     };
-
     loginHandler(data);
- 
     setEmail("");
     setPassword("");
   };
