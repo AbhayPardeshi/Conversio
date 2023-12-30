@@ -34,8 +34,8 @@ const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const [apiData, setApiData] = useState(initialApiData);
   const { apiURL, method, postMethodData, encodedToken } = apiData;
-
-  const { serverResponse, error, isLoading } = useFetch(
+  const [isLoading, setIsLoading] = useState(true);
+  const { serverResponse, error } = useFetch(
     apiURL,
     method,
     postMethodData,
@@ -66,7 +66,16 @@ const AuthProvider = ({ children }) => {
       });
     }
   };
-  
+
+  const updateUserToken = (token) => {
+    const decodedToken = jwtDecode(token, process.env.USER_PWD_SECRET);
+    userAuthDispatch({
+      type: "LOGIN",
+      payload: { encodedToken, user: { ...decodedToken } },
+    });
+    localStorage.setItem("token", token);
+  };
+
   useEffect(() => {
     if (serverResponse) {
       if (serverResponse.data.action === "signup") {
@@ -113,10 +122,12 @@ const AuthProvider = ({ children }) => {
             user: { ...decodedToken },
           },
         });
+
         Toast({
           type: "success",
           msg: `Logged in as ${decodedToken._doc.name}`,
         });
+        setIsLoading(false);
       }
     });
     return () => clearTimeout(setTimeOutId);
@@ -124,7 +135,14 @@ const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ signinHandler, loginHandler, userAuthState }}
+      value={{
+        signinHandler,
+        loginHandler,
+        userAuthState,
+        isLoading,
+        updateUserToken,
+        initialUserAuthState,
+      }}
     >
       {children}
     </AuthContext.Provider>
