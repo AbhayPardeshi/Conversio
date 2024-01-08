@@ -28,6 +28,7 @@ export const useFetch = (
           serverResponse = await axios.post(API_URL, postMethodData, {
             headers: {
               authorization: encodedToken,
+              "Content-Type": "multipart/form-data",
             },
           });
           break;

@@ -15,7 +15,7 @@ const postReducer = (state, action) => {
         ...state,
         apiURL: "/posts",
         method: "POST",
-        postMethodData: { ...payload },
+        postMethodData: payload,
       };
     case DELETE_ONE_POST:
       return {

@@ -29,15 +29,14 @@ const Feed = () => {
     deletePost,
     postDispatch,
   } = usePost();
-  
-  const setPostHandler = () => {
-    const newPost = {
-      id: new Date().getTime().toString(),
-      text: postText,
-      imageURL: postImage,
-    };
 
-    sendData(newPost);
+  const setPostHandler = async () => {
+    const file = postImage;
+    var formData = new FormData();
+    formData.append("text", postText);
+    formData.append("file", file);
+
+    await sendData(formData);
     setPostText("");
     setPostImage("");
     setImagePreview("");
@@ -49,7 +48,7 @@ const Feed = () => {
     const file = e.target.files[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      setPostImage(imageUrl);
+      setPostImage(file);
       setImagePreview(imageUrl);
     }
   };
@@ -60,7 +59,7 @@ const Feed = () => {
   const handleLikeClick = (postId) => {
     setPosts((prevPosts) =>
       prevPosts.map((post) =>
-        post.id === postId
+        post._id === postId
           ? {
               ...post,
               liked: !post.liked,
@@ -72,7 +71,7 @@ const Feed = () => {
   const handleBookmarkClick = (postId) => {
     setPosts((prevPosts) =>
       prevPosts.map((post) =>
-        post.id === postId
+        post._id === postId
           ? {
               ...post,
               bookmarked: !post.bookmarked,
@@ -142,6 +141,7 @@ const Feed = () => {
               </button>
               <input
                 type="file"
+                name="file"
                 accept="image/*"
                 onChange={handleImageUpload}
                 style={{ display: "none" }}
@@ -176,7 +176,7 @@ const Feed = () => {
         {/* List of All Post */}
         {posts.map((item, index) => {
           return (
-            <div className="bg-white rounded-md p-5 justify-center mt-4">
+            <div className="bg-white rounded-md p-5 justify-center mt-4 " key={index}>
               <div className="flex mt-[0.40rem] items-center gap-3">
                 <img
                   className="w-[2.15rem] h-[2.1rem] rounded-full object-cover"
@@ -198,17 +198,17 @@ const Feed = () => {
                   <div className="relative inline-block">
                     <button
                       onClick={() => {
-                        toggleDropdown(item.id);
+                        toggleDropdown(item._id);
                       }}
                       className=" text-black py-2 px-4 rounded focus:outline-none"
                     >
                       <BsThreeDots />
                     </button>
-                    {isDropdownVisible === item.id && (
+                    {isDropdownVisible === item._id && (
                       <div className="dropdown-content absolute bg-white font-semibold border rounded shadow-md right-3 top-[25px] min-w-[80px]">
                         <p
                           className="p-2 hover:bg-gray-100 cursor-pointer text-xs "
-                          onClick={() => deletePost(item.id)}
+                          onClick={() => deletePost(item._id)}
                         >
                           Delete Post
                         </p>
@@ -228,7 +228,7 @@ const Feed = () => {
                   <div>
                     <img
                       className="w-full h-[25rem] rounded-md object-cover mt-4"
-                      src={item.imageURL}
+                      src={`http://localhost:3001${item.imageURL}`}
                       alt="post"
                     />
                   </div>
@@ -237,7 +237,7 @@ const Feed = () => {
               <div className="flex mt-5 justify-between px-4 text-gray-600">
                 <button
                   onClick={() => {
-                    handleLikeClick(item.id);
+                    handleLikeClick(item._id);
                   }}
                 >
                   {item.liked ? (
@@ -251,7 +251,7 @@ const Feed = () => {
                 </button>
                 <button
                   onClick={() => {
-                    handleBookmarkClick(item.id);
+                    handleBookmarkClick(item._id);
                   }}
                 >
                   {item.bookmarked ? (

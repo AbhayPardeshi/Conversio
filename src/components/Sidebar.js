@@ -78,7 +78,7 @@ const Sidebar = () => {
             </div> 
         //  </div> 
         //</div> */}
-        <div className="mt-4">
+        <div className="">
           <ul>
             <li className="flex flex-row gap-3 items-center text-gray-500  hover:bg-blue-600 hover:text-gray-100 cursor-pointer rounded-md p-2">
               <span className="text-gray-900">

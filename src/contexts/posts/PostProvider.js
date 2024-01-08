@@ -73,7 +73,7 @@ export const PostProvider = ({ children }) => {
   const sendData = async (data) => {
     postDispatch({
       type: "POST",
-      payload: { ...data },
+      payload:data ,
     });
   };
 

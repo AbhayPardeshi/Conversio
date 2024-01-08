@@ -22,7 +22,7 @@ const ProfilePage = ({ isOpen, onClose }) => {
   const [userData, setUserData] = useState(initialUserData);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
-  const [image, setImage] = React.useState(null);
+  const [image, setImage] = useState(null);
   const { apiURL, method, postMethodData, encodedToken } = userData;
 
   const { serverResponse, error } = useFetch(
@@ -71,12 +71,15 @@ const ProfilePage = ({ isOpen, onClose }) => {
   const closeModalHandler = () => {
     setName(user.name);
     setBio(user.bio);
+    
     onClose();
   };
+
   useEffect(() => {
     if (user && user.name && user.bio) {
       setName(user.name);
       setBio(user.bio);
+      setImage(user.bioImageURL);
     }
   }, [user]);
   return (

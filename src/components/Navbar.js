@@ -4,17 +4,19 @@ import { AiOutlineSearch } from "react-icons/ai";
 import { TbMessage2 } from "react-icons/tb";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import ProfilePage from "./Profile/ProfilePage";
-
+import { useAuth } from "../contexts/auth/AuthProvider";
 
 const Navbar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { userAuthState, updateUserToken, isLoading } = useAuth();
+  const user = userAuthState?.user_doc;
   return (
     <>
       <div className="flex items-center mb-4">
         <div className="flex flex-col items-center w-1/5">
           <img
-            className="w-48 h-12 p-2 "
-            src="./Assets/images/name.png"
+            className="w-[8rem] h-[4rem] bg-cover"
+            src="./Assets/images/logo4.png"
             alt="profile"
           />
         </div>
@@ -50,16 +52,15 @@ const Navbar = () => {
           </div>
 
           <div className="flex w-1/2 justify-end gap-1">
-            
-              <img
-                className="w-[2.35rem] h-[2.15rem] rounded-full object-cover cursor-pointer"
-                src="./assets/images/user1.jfif"
-                alt="user"
-                onClick={() => setIsModalOpen(true)}
-              />
+            <img
+              className="w-[2.35rem] h-[2.15rem] rounded-full object-cover cursor-pointer"
+              src={user?.imageURL}
+              alt="user"
+              onClick={() => setIsModalOpen(true)}
+            />
             <ProfilePage
               isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)} 
+              onClose={() => setIsModalOpen(false)}
             />
           </div>
         </div>
