@@ -67,8 +67,20 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  const logoutHandler = () => {
+    userAuthDispatch({
+      type: "LOGOUT",
+    });
+
+    localStorage.clear("token");
+    Toast({ type: "success", msg: "Logged out successfully!" });
+    navigate("/login");
+  };
+
   const updateUserToken = (token) => {
+    
     const decodedToken = jwtDecode(token, process.env.USER_PWD_SECRET);
+    console.log(decodedToken);
     userAuthDispatch({
       type: "LOGIN",
       payload: { encodedToken, user: { ...decodedToken } },
@@ -138,6 +150,7 @@ const AuthProvider = ({ children }) => {
       value={{
         signinHandler,
         loginHandler,
+        logoutHandler,
         userAuthState,
         isLoading,
         updateUserToken,

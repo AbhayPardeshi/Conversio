@@ -9,7 +9,7 @@ const authReducer = (state, action) => {
         user: { ...user },
       };
     case "LOGOUT":
-      return { ...state, user: null };
+      return { ...state, isUserLoggedIn: false, encodedToken: " ", user: {} };
 
     default:
       return { ...state };

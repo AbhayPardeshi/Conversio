@@ -8,6 +8,7 @@ import {
 import postReducer from "./postReducer";
 import { useFetch } from "../../services/useFetch";
 import { Toast } from "../../services/Toast";
+import { useAuth } from "../auth/AuthProvider";
 
 const initialState = {
   apiURL: "",
@@ -20,7 +21,12 @@ export const usePost = () => useContext(PostContext);
 export const PostProvider = ({ children }) => {
   const [posts, setPosts] = useState([]);
   const [postState, postDispatch] = useReducer(postReducer, initialState);
-  const { serverResponse, isLoading, error } = useFetch(
+  const { userAuthState, isLoading } = useAuth();
+  let user = {};
+  if (!isLoading) {
+    user = userAuthState?.user._doc;
+  }
+  const { serverResponse, error } = useFetch(
     postState.apiURL,
     postState.method,
     postState.postMethodData
@@ -29,6 +35,8 @@ export const PostProvider = ({ children }) => {
   useEffect(() => {
     postDispatch({ type: "GET_POSTS" });
   }, []);
+
+  useEffect(() => {});
 
   // useEffect(() => {
   //   if (serverResponse) {
@@ -59,8 +67,23 @@ export const PostProvider = ({ children }) => {
             Toast({ type: "success", msg: "post created successfully" });
             break;
           case "deletePost":
-            setPosts((prevPosts) => prevPosts.filter((post) => post.id !== id));
+            setPosts((prevPosts) =>
+              prevPosts.filter((post) => post._id !== id)
+            );
             break;
+
+          case "like":
+            setPosts(posts);
+            Toast({ type: "success", msg: "post liked successfully" });
+
+            break;
+
+          case "dislike":
+            setPosts(posts);
+            Toast({ type: "success", msg: "post disliked successfully" });
+
+            break;
+
           default:
             console.error("Unknown action:", action);
         }
@@ -73,13 +96,26 @@ export const PostProvider = ({ children }) => {
   const sendData = async (data) => {
     postDispatch({
       type: "POST",
-      payload:data ,
+      payload: data,
     });
   };
 
   const deletePost = (id) => {
     postDispatch({ type: "DELETE_ONE_POST", payload: id });
   };
+
+  const likePost = (id) => {
+    console.log(user._id);
+    postDispatch({ type: "LIKE_POST", payload: { id: id, userId: user._id } });
+  };
+
+  const dislikePost = (id) => {
+    postDispatch({
+      type: "DISLIKE_POST",
+      payload: { id: id, userId: user._id },
+    });
+  };
+
   return (
     <PostContext.Provider
       value={{
@@ -89,6 +125,8 @@ export const PostProvider = ({ children }) => {
         serverResponse,
         deletePost,
         postDispatch,
+        likePost,
+        dislikePost,
       }}
     >
       {children}

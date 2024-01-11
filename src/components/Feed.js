@@ -14,21 +14,16 @@ import { BsFillBookmarkFill } from "react-icons/bs";
 import { useFetch } from "../services/useFetch";
 import { usePost } from "../contexts/posts/PostProvider";
 import creationTime from "../utils/creationTime";
+import Post from "./Post";
 
 const Feed = () => {
   const fileInputRef = useRef(null);
   const [postText, setPostText] = useState("");
   const [postImage, setPostImage] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(null);
-  const {
-    posts,
-    setPosts,
-    sendData,
-    serverResponse,
-    deletePost,
-    postDispatch,
-  } = usePost();
+
+  const { sendData, posts } = usePost();
+  const reversePost = [...posts].reverse();
 
   const setPostHandler = async () => {
     const file = postImage;
@@ -41,9 +36,11 @@ const Feed = () => {
     setPostImage("");
     setImagePreview("");
   };
+
   const setPostTextHandler = (e) => {
     setPostText(e.target.value);
   };
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -56,41 +53,11 @@ const Feed = () => {
     fileInputRef.current.click();
   };
 
-  const handleLikeClick = (postId) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post._id === postId
-          ? {
-              ...post,
-              liked: !post.liked,
-            }
-          : post
-      )
-    );
-  };
-  const handleBookmarkClick = (postId) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post._id === postId
-          ? {
-              ...post,
-              bookmarked: !post.bookmarked,
-            }
-          : post
-      )
-    );
-  };
-
-  const toggleDropdown = (postId) => {
-    setIsDropdownVisible((prevVisibleDropdown) =>
-      prevVisibleDropdown === postId ? null : postId
-    );
-  };
-
   return (
     <>
       <section className="p-[1rem]  rounded-md">
         {/* Post Area */}
+
         <div className="bg-white flex p-5 gap-4 rounded-md justify-center">
           <div className="mt-[0.40rem]">
             <img
@@ -174,99 +141,8 @@ const Feed = () => {
         {/* Post Area End */}
 
         {/* List of All Post */}
-        {posts.map((item, index) => {
-          return (
-            <div className="bg-white rounded-md p-5 justify-center mt-4 " key={index}>
-              <div className="flex mt-[0.40rem] items-center gap-3">
-                <img
-                  className="w-[2.15rem] h-[2.1rem] rounded-full object-cover"
-                  src="./assets/images/user2.jfif"
-                  alt="user"
-                />
-                <div className="flex justify-between w-full align-top">
-                  <div className="flex gap-4">
-                    <div>
-                      <p>John Doe</p>
-                      <p className="text-[0.75rem] text-gray-500">@JohnDoe</p>
-                    </div>
-                    <div>
-                      <span className="text-[0.75rem]">
-                        {creationTime(item.date)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="relative inline-block">
-                    <button
-                      onClick={() => {
-                        toggleDropdown(item._id);
-                      }}
-                      className=" text-black py-2 px-4 rounded focus:outline-none"
-                    >
-                      <BsThreeDots />
-                    </button>
-                    {isDropdownVisible === item._id && (
-                      <div className="dropdown-content absolute bg-white font-semibold border rounded shadow-md right-3 top-[25px] min-w-[80px]">
-                        <p
-                          className="p-2 hover:bg-gray-100 cursor-pointer text-xs "
-                          onClick={() => deletePost(item._id)}
-                        >
-                          Delete Post
-                        </p>
-                        <p className="p-2 hover:bg-gray-100 cursor-pointer text-xs">
-                          Edit Post
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="pt-2">
-                <div>
-                  <p key={item.index}>{item.text}</p>
-                </div>
-                {item.imageURL && (
-                  <div>
-                    <img
-                      className="w-full h-[25rem] rounded-md object-cover mt-4"
-                      src={`http://localhost:3001${item.imageURL}`}
-                      alt="post"
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="flex mt-5 justify-between px-4 text-gray-600">
-                <button
-                  onClick={() => {
-                    handleLikeClick(item._id);
-                  }}
-                >
-                  {item.liked ? (
-                    <AiFillHeart size={25} color="red" />
-                  ) : (
-                    <AiOutlineHeart size={25} />
-                  )}
-                </button>
-                <button>
-                  <AiOutlineComment size={25} />
-                </button>
-                <button
-                  onClick={() => {
-                    handleBookmarkClick(item._id);
-                  }}
-                >
-                  {item.bookmarked ? (
-                    <BsFillBookmarkFill size={25} color="gray" />
-                  ) : (
-                    <FiBookmark size={25} />
-                  )}
-                </button>
-
-                <button>
-                  <FiShare2 size={25} />
-                </button>
-              </div>
-            </div>
-          );
+        {reversePost?.map((item, index) => {
+          return <Post item={item} index={index} />;
         })}
       </section>
     </>

@@ -5,7 +5,8 @@ export const useFetch = (
   apiURL,
   method = "GET",
   postMethodData,
-  encodedToken
+  encodedToken,
+  isFile = false
 ) => {
   const [serverResponse, setServerResponse] = useState();
   const [isLoading, setLoading] = useState(false);
@@ -25,12 +26,21 @@ export const useFetch = (
           });
           break;
         case "POST":
-          serverResponse = await axios.post(API_URL, postMethodData, {
-            headers: {
-              authorization: encodedToken,
-              "Content-Type": "multipart/form-data",
-            },
-          });
+          if (isFile) {
+            serverResponse = await axios.post(API_URL, postMethodData, {
+              headers: {
+                authorization: encodedToken,
+                "Content-Type": "multipart/form-data",
+              },
+            });
+          } else {
+            serverResponse = await axios.post(API_URL, postMethodData, {
+              headers: {
+                authorization: encodedToken,
+              },
+            });
+          }
+
           break;
         case "DELETE":
           serverResponse = await axios.delete(API_URL, {

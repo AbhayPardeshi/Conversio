@@ -7,7 +7,8 @@ import { useFetch } from "../../services/useFetch";
 import { Toast } from "../../services/Toast";
 const ProfilePage = ({ isOpen, onClose }) => {
   const filePickerRef = useRef();
-  const { userAuthState, updateUserToken, isLoading } = useAuth();
+  const { userAuthState, updateUserToken, isLoading, logoutHandler } =
+    useAuth();
   let user = {};
   if (userAuthState.isUserLoggedIn) {
     user = userAuthState.user._doc;
@@ -56,22 +57,23 @@ const ProfilePage = ({ isOpen, onClose }) => {
         };
       });
     }
-    if (serverResponse?.data?.encodedToken) {
+    const response = await serverResponse?.data?.encodedToken;
+    if (response) {
+      console.log("hello");
       updateUserToken(serverResponse.data.encodedToken);
+      onClose();
+
+      Toast({
+        type: "success",
+        msg: "User info updated!",
+      });
     }
-
-    onClose();
-
-    Toast({
-      type: "success",
-      msg: "User info updated!",
-    });
   };
 
   const closeModalHandler = () => {
     setName(user.name);
     setBio(user.bio);
-    
+
     onClose();
   };
 
@@ -134,7 +136,7 @@ const ProfilePage = ({ isOpen, onClose }) => {
             </div>
           </div>
         </div>
-        <div className="flex flex-col text-black bg-slate-200 border-black m-2 p-2">
+        <div className="flex flex-col text-black bg-slate-200 border-black mx-10 p-2">
           <div className="font-bold">Name</div>
           <textarea
             className="h-[30px] resize-none outline-none text-md bg-slate-200 text-gray-800"
@@ -142,7 +144,7 @@ const ProfilePage = ({ isOpen, onClose }) => {
             value={name}
           ></textarea>
         </div>
-        <div className="flex flex-col text-black bg-slate-200 border-black m-2 p-2">
+        <div className="flex flex-col text-black bg-slate-200 border-black mx-10 mt-2 p-2">
           <div className="font-bold">Bio</div>
           <textarea
             className="h-[30px] resize-none outline-none text-md bg-slate-200 text-gray-800"
@@ -150,6 +152,12 @@ const ProfilePage = ({ isOpen, onClose }) => {
             value={bio}
           ></textarea>
         </div>
+        <button
+          className=" flex bg-blue-600 text-white rounded-2xl px-4 py-2 text-[0.85rem] mx-auto mt-[3rem]"
+          onClick={logoutHandler}
+        >
+          Logout
+        </button>
       </div>
     </div>
   );
