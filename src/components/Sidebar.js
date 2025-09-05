@@ -5,6 +5,7 @@ import { FaUserFriends } from "react-icons/fa";
 import { IoCubeSharp } from "react-icons/io5";
 import { FiSettings } from "react-icons/fi";
 import { BsBookmarkPlus } from "react-icons/bs";
+import { NavLink } from "react-router-dom";
 
 const Sidebar = () => {
   return (
@@ -12,64 +13,106 @@ const Sidebar = () => {
       <div className="flex flex-col ">
         <div className="">
           <ul>
-            <li className="flex flex-row gap-3 items-center text-gray-500  hover:bg-blue-600 hover:text-gray-100 cursor-pointer rounded-md p-2">
+            <NavLink
+              to="/feed"
+              className={({ isActive }) =>
+                `flex flex-row gap-3 items-center text-gray-500  hover:bg-gray-200  cursor-pointer rounded-md p-2 ${
+                  isActive ? "bg-gray-400 text-white-100" : ""
+                }`
+              }
+            >
               <span className="text-gray-900">
                 <AiOutlineAppstore />
               </span>
 
               <h3 className="py-1">Feed</h3>
-            </li>
-            <li className="flex flex-row gap-3 items-center hover:bg-blue-600  hover:text-gray-100 cursor-pointer rounded-md p-2">
+            </NavLink>
+            {/* <NavLink
+              to="/discover"
+              className={({ isActive }) =>
+                `flex flex-row gap-3 items-center text-gray-500  hover:bg-gray-200  cursor-pointer rounded-md p-2 ${
+                  isActive ? "bg-gray-400 text-white-100" : ""
+                }`
+              }
+            >
               <span>
                 <GrEmptyCircle />
               </span>
               <div>
-                <h3 className="text-gray-500 py-1 hover:text-gray-100">
+                <h3 className="py-1">
                   Discover
                 </h3>
               </div>
-            </li>
-            <li className="flex flex-row gap-3 items-center hover:bg-blue-600  hover:text-gray-100 cursor-pointer rounded-md p-2">
+            </NavLink> */}
+            <NavLink
+              to="/message"
+              className={({ isActive }) =>
+                `flex flex-row gap-3 items-center text-gray-500  hover:bg-gray-200  cursor-pointer rounded-md p-2 ${
+                  isActive ? "bg-gray-400 text-white-100" : ""
+                }`
+              }
+            >
               <span>
                 <FaUserFriends />
               </span>
               <div>
-                <h3 className="text-gray-500 hover:text-gray-100 py-1">
-                  Friends
+                <h3 className=" py-1">
+                  Message
                 </h3>
               </div>
-            </li>
-            <li className="flex flex-row gap-3 items-center hover:bg-blue-600  hover:text-gray-100 cursor-pointer rounded-md p-2">
+            </NavLink>
+            <NavLink
+              to="/notifications"
+              className={({ isActive }) =>
+                `flex flex-row gap-3 items-center text-gray-500  hover:bg-gray-200  cursor-pointer rounded-md p-2 ${
+                  isActive ? "bg-gray-400 text-white-100" : ""
+                }`
+              }
+            >
               <span>
                 <IoCubeSharp />
               </span>
               <div>
-                <h3 className="text-gray-500 hover:text-gray-100 py-1">
-                  Community
+                <h3 className=" py-1">
+                  Notifications
                 </h3>
               </div>
-            </li>
-            <li className="flex flex-row gap-3 items-center hover:bg-blue-600  hover:text-gray-100 cursor-pointer rounded-md p-2">
+            </NavLink>
+            <NavLink
+              to="/bookmark"
+              className={({ isActive }) =>
+                `flex flex-row gap-3 items-center text-gray-500  hover:bg-gray-200  cursor-pointer rounded-md p-2 ${
+                  isActive ? "bg-gray-400 text-white-100" : ""
+                }`
+              }
+            >
               <span>
                 <BsBookmarkPlus />
               </span>
               <div>
-                <h3 className="text-gray-500 hover:text-gray-100 py-1">
+                <h3 className=" py-1">
                   Bookmarks
                 </h3>
               </div>
-            </li>
+            </NavLink>
 
-            <li className="flex flex-row gap-3 items-center hover:bg-blue-600 cursor-pointer rounded-md p-2 hover:text-white">
+            <NavLink
+              to=""
+              className={({ isActive }) =>
+                `flex flex-row gap-3 items-center text-gray-500  hover:bg-gray-200  cursor-pointer rounded-md p-2 ${
+                  isActive ? "bg-gray-400 text-white-100" : ""
+                }`
+              }
+            >
               <span>
                 <FiSettings />
               </span>
               <div>
-                <p className=" hover:text-gray-100 text-gray-500 py-1">
+                <p className=" py-1">
                   Settings
                 </p>
               </div>
-            </li>
+            </NavLink>
           </ul>
         </div>
       </div>

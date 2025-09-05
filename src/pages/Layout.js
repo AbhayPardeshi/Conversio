@@ -1,8 +1,7 @@
-import React from "react";
 import Sidebar from "../components/Sidebar";
-import Feed from "../components/Feed";
 import Discover from "../components/Discover";
 import Navbar from "../components/Navbar";
+import { Outlet } from "react-router-dom";
 
 const Layout = () => {
   return (
@@ -16,7 +15,7 @@ const Layout = () => {
             <Sidebar />
           </div>
           <div className="w-3/5 h-max-screen overflow-auto bg-[#f5f7fb]">
-            <Feed />
+            <Outlet />
           </div>
           <div className="w-1/5">
             <Discover />
