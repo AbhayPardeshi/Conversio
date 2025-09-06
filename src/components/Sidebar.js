@@ -9,10 +9,10 @@ import { NavLink } from "react-router-dom";
 
 const Sidebar = () => {
   return (
-    <div className="h-screen px-[1rem]">
-      <div className="flex flex-col ">
+    <div className=" h-full p-[1rem]">
+      <div className="flex flex-col gap-y-6">
         <div className="">
-          <ul>
+          <ul className="flex flex-col mt-4">
             <NavLink
               to="/feed"
               className={({ isActive }) =>

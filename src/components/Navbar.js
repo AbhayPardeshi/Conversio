@@ -18,7 +18,7 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="flex items-center mb-4">
+      <div className="flex items-center mb-2 py-2">
         <div className="flex flex-col items-center w-1/5">
           <img
             className="w-[8rem] h-[4rem] bg-cover"

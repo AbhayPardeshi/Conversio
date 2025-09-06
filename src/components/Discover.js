@@ -3,7 +3,7 @@ import { TbMessage2 } from "react-icons/tb";
 
 const Discover = () => {
   return (
-    <div className="h-screen px-4">
+    <div className="px-4">
       <div className="flex flex-col gap-y-3">
         <p>Who to Follow</p>
         <div className="flex flex-col gap-y-3">

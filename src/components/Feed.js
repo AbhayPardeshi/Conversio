@@ -14,7 +14,7 @@ import { BsFillBookmarkFill } from "react-icons/bs";
 import { useFetch } from "../services/useFetch";
 import { usePost } from "../contexts/posts/PostProvider";
 import creationTime from "../utils/creationTime";
-import Post from "./Post";
+import Posts from "./Post";
 
 const Feed = () => {
   const fileInputRef = useRef(null);
@@ -55,7 +55,7 @@ const Feed = () => {
 
   return (
     <>
-      <section className="p-[1rem]  rounded-md">
+      <section className="p-[1rem] h-[calc(100vh-90px)] rounded-md">
         {/* Post Area */}
 
         <div className="bg-white flex p-5 gap-4 rounded-md justify-center">
@@ -66,7 +66,7 @@ const Feed = () => {
               alt="user"
             />
           </div>
-          <div className="flex flex-col w-full gap-y-4">
+          <div className="flex flex-col w-full">
             <textarea
               name="post-area"
               id="search-input"
@@ -141,9 +141,11 @@ const Feed = () => {
         {/* Post Area End */}
 
         {/* List of All Post */}
-        {reversePost?.map((item, index) => {
-          return <Post item={item} index={index} />;
-        })}
+        {/* {reversePost?.map((item, index) => {
+          return <Posts item={item} index={index} />;
+        })} */}
+
+        <Posts />
       </section>
     </>
   );
