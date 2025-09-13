@@ -27,6 +27,7 @@ const AuthContext = createContext();
 const useAuth = () => useContext(AuthContext);
 
 const AuthProvider = ({ children }) => {
+  
   const [userAuthState, userAuthDispatch] = useReducer(
     authReducer,
     initialUserAuthState
@@ -35,6 +36,8 @@ const AuthProvider = ({ children }) => {
   const [apiData, setApiData] = useState(initialApiData);
   const { apiURL, method, postMethodData, encodedToken } = apiData;
   const [isLoading, setIsLoading] = useState(true);
+
+  // change in apiData will call useFetch
   const { serverResponse, error } = useFetch(
     apiURL,
     method,
@@ -46,7 +49,7 @@ const AuthProvider = ({ children }) => {
       setApiData((prev) => {
         return {
           ...prev,
-          apiURL: "/auth/signin",
+          apiURL: "/api/auth/register",
           method: "POST",
           postMethodData: { ...data },
         };
@@ -54,12 +57,13 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+
   const loginHandler = (data) => {
     if (data) {
       setApiData((prev) => {
         return {
           ...prev,
-          apiURL: "/auth/login",
+          apiURL: "/api/auth/login",
           method: "POST",
           postMethodData: { ...data },
         };
@@ -78,9 +82,7 @@ const AuthProvider = ({ children }) => {
   };
 
   const updateUserToken = (token) => {
-    
     const decodedToken = jwtDecode(token, process.env.USER_PWD_SECRET);
-    console.log(decodedToken);
     userAuthDispatch({
       type: "LOGIN",
       payload: { encodedToken, user: { ...decodedToken } },
@@ -90,16 +92,16 @@ const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (serverResponse) {
-      if (serverResponse.data.action === "signup") {
+      if (serverResponse.data.action === "register") {
         Toast({
           type: "success",
-          msg: "Account created successfully",
+          msg: "Account created successfully, Please login",
         });
 
         navigate("/login");
       } else if (serverResponse.data.action === "login") {
         const token = serverResponse.data.encodedToken;
-        const decodedToken = jwtDecode(token, process.env.USER_PWD_SECRET);
+        const decodedToken = jwtDecode(token);
 
         userAuthDispatch({
           type: "LOGIN",
@@ -109,7 +111,7 @@ const AuthProvider = ({ children }) => {
 
         Toast({
           type: "success",
-          msg: `Logged in as ${decodedToken._doc.name}`,
+          msg: `Logged in as ${decodedToken.username}`,
         });
 
         navigate("/");
@@ -135,11 +137,9 @@ const AuthProvider = ({ children }) => {
           },
         });
 
-        Toast({
-          type: "success",
-          msg: `Logged in as ${decodedToken._doc.name}`,
-        });
+     
         setIsLoading(false);
+        navigate("/");
       }
     });
     return () => clearTimeout(setTimeOutId);
