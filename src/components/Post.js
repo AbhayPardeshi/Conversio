@@ -323,9 +323,9 @@
 
 // export default Post;
 
-// 
 
-import React, { useState } from "react";
+
+import { useEffect, useState } from "react";
 import {
   Heart,
   MessageCircle,
@@ -333,145 +333,8 @@ import {
   Share2,
   MoreHorizontal,
 } from "lucide-react";
-
-// Sample data
-const samplePostsData = [
-  {
-    _id: "post_001",
-    text: "Just finished building my first React Native app! 📱 The learning curve was steep but totally worth it. Can't wait to deploy it to the app store! 🚀",
-    imageURL: "/uploads/react-native-app.jpg",
-    date: "2024-01-20T14:30:00Z",
-    likes: ["user_001", "user_003", "user_007", "user_012"],
-    bookmarked: false,
-    user: {
-      _id: "user_005",
-      name: "Alex Chen",
-      username: "alexchen_dev",
-      avatar: "https://i.pravatar.cc/150?img=8",
-    },
-    comments: 12,
-    shares: 3,
-  },
-  {
-    _id: "post_002",
-    text: "Beautiful sunrise from my morning hike 🌅 Sometimes you just need to disconnect and enjoy nature's beauty. What's your favorite way to start the day?",
-    imageURL: "/uploads/sunrise-hike.jpg",
-    date: "2024-01-20T06:45:00Z",
-    likes: ["user_002", "user_004", "user_008", "user_011", "user_015"],
-    bookmarked: true,
-    user: {
-      _id: "user_003",
-      name: "Sarah Johnson",
-      username: "sarah_adventures",
-      avatar: "https://i.pravatar.cc/150?img=9",
-    },
-    comments: 8,
-    shares: 5,
-  },
-  {
-    _id: "post_003",
-    text: "Working on a new design system for our startup. Clean, minimal, and user-friendly. Here's a sneak peek at the component library! 🎨✨",
-    imageURL: "/uploads/design-system.jpg",
-    date: "2024-01-19T16:20:00Z",
-    likes: ["user_001", "user_006", "user_009"],
-    bookmarked: false,
-    user: {
-      _id: "user_007",
-      name: "Maria Rodriguez",
-      username: "maria_designs",
-      avatar: "https://i.pravatar.cc/150?img=10",
-    },
-    comments: 15,
-    shares: 7,
-  },
-  {
-    _id: "post_004",
-    text: "Coffee shop vibes ☕ Perfect spot for coding and getting things done. Their WiFi is fast and the atmosphere is just right for productivity!",
-    imageURL: null,
-    date: "2024-01-19T10:15:00Z",
-    likes: ["user_002", "user_005", "user_010"],
-    bookmarked: true,
-    user: {
-      _id: "user_001",
-      name: "John Smith",
-      username: "johnsmith_code",
-      avatar: "https://i.pravatar.cc/150?img=11",
-    },
-    comments: 4,
-    shares: 1,
-  },
-  {
-    _id: "post_005",
-    text: "Just deployed my first full-stack application! 🎉 Built with React, Node.js, Express, and MongoDB. The feeling when everything works perfectly is unmatched!",
-    imageURL: "/uploads/fullstack-app.jpg",
-    date: "2024-01-18T20:30:00Z",
-    likes: [
-      "user_003",
-      "user_004",
-      "user_006",
-      "user_008",
-      "user_013",
-      "user_014",
-    ],
-    bookmarked: false,
-    user: {
-      _id: "user_009",
-      name: "David Kim",
-      username: "david_fullstack",
-      avatar: "https://i.pravatar.cc/150?img=12",
-    },
-    comments: 23,
-    shares: 12,
-  },
-  {
-    _id: "post_006",
-    text: "Team lunch at the new Italian place downtown! 🍝 Nothing beats good food and great conversations with amazing colleagues. #TeamBuilding",
-    imageURL: "/uploads/team-lunch.jpg",
-    date: "2024-01-18T13:45:00Z",
-    likes: ["user_001", "user_007", "user_011"],
-    bookmarked: false,
-    user: {
-      _id: "user_004",
-      name: "Emily Watson",
-      username: "emily_pm",
-      avatar: "https://i.pravatar.cc/150?img=13",
-    },
-    comments: 7,
-    shares: 2,
-  },
-  {
-    _id: "post_007",
-    text: "Learning Python data science libraries has been an incredible journey! 📊 Pandas, NumPy, and Matplotlib are game-changers. Any recommendations for next steps?",
-    imageURL: null,
-    date: "2024-01-17T19:20:00Z",
-    likes: ["user_005", "user_009", "user_012", "user_015"],
-    bookmarked: true,
-    user: {
-      _id: "user_002",
-      name: "Lisa Chang",
-      username: "lisa_datascience",
-      avatar: "https://i.pravatar.cc/150?img=14",
-    },
-    comments: 18,
-    shares: 6,
-  },
-  {
-    _id: "post_008",
-    text: "Weekend project: Building a smart home automation system with Raspberry Pi! 🏠🤖 It can control lights, temperature, and security. Technology is amazing!",
-    imageURL: "/uploads/smart-home.jpg",
-    date: "2024-01-17T11:30:00Z",
-    likes: ["user_001", "user_003", "user_006", "user_010", "user_014"],
-    bookmarked: false,
-    user: {
-      _id: "user_008",
-      name: "Michael Brown",
-      username: "mike_iot",
-      avatar: "https://i.pravatar.cc/150?img=15",
-    },
-    comments: 11,
-    shares: 8,
-  },
-];
+import { usePost } from "../contexts/posts/PostProvider";
+import creationTime from "../utils/creationTime";
 
 // Current user for demo
 const currentUser = {
@@ -480,23 +343,14 @@ const currentUser = {
   username: "current_user",
 };
 
-const Posts = () => {
-  const [posts, setPosts] = useState(samplePostsData);
+const Posts = ({ posts, setPosts, deletePost }) => {
+  console.log(posts);
+  
+  //const { posts, setPosts, deletePost, dislikePost, likePost } = usePost();
+  //const [posts, setPosts] = useState(samplePostsData);
   const [isDropdownVisible, setIsDropdownVisible] = useState(null);
   const userId = currentUser._id;
-
-  // Helper function to format creation time
-  const creationTime = (dateString) => {
-    const now = new Date();
-    const postDate = new Date(dateString);
-    const diffInHours = Math.floor((now - postDate) / (1000 * 60 * 60));
-
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours}h`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return `${diffInDays}d`;
-    return postDate.toLocaleDateString();
-  };
+  console.log();
 
   const handleLikeClick = (postId) => {
     setPosts((prevPosts) =>
@@ -527,39 +381,42 @@ const Posts = () => {
     );
   };
 
-  const deletePost = (postId) => {
-    setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
-    setIsDropdownVisible(null);
-  };
+  // const deletePost = (postId) => {
+  //   setPosts((prevPosts) => prevPosts.filter((post) => post._id !== postId));
+  //   setIsDropdownVisible(null);
+  // };
 
   return (
     <div className="bg-gray-100 bg-white rounded-md justify-center ">
       {/* Posts Feed */}
+
       <div className="flex-1 overflow-y-auto scrollbar-hide">
         <section className=" rounded-md w-full">
-          {posts.map((item, index) => (
+          {posts.map((post, index) => (
             <div
               className="bg-white rounded-md p-5 justify-center mt-4"
-              key={item._id}
+              key={index}
             >
               {/* Post Header */}
               <div className="flex mt-[0.40rem] items-center gap-3">
                 <img
                   className="w-[2.15rem] h-[2.1rem] rounded-full object-cover"
-                  src={item.user.avatar}
+                  src={post.user?.profilePicture}
                   alt="user"
                 />
                 <div className="flex justify-between w-full align-top">
                   <div className="flex gap-4">
                     <div>
-                      <span className="font-semibold">{item.user.name}</span>
+                      <span className="font-semibold">
+                        {post.user.username}
+                      </span>
                       <span className="text-[0.75rem] text-gray-500 ml-2">
-                        @{item.user.username}
+                        @{post.user?.username.toLowerCase().replace(/\s+/g, "")}
                       </span>
                     </div>
                     <div>
                       <span className="text-[0.75rem] text-gray-500">
-                        {creationTime(item.date)}
+                        {creationTime(post.createdAt)}
                       </span>
                     </div>
                   </div>
@@ -567,16 +424,16 @@ const Posts = () => {
                   {/* Dropdown Menu */}
                   <div className="relative inline-block">
                     <button
-                      onClick={() => toggleDropdown(item._id)}
+                      onClick={() => toggleDropdown(post._id)}
                       className="text-black py-2 px-4 rounded focus:outline-none hover:bg-gray-100"
                     >
                       <MoreHorizontal size={20} />
                     </button>
-                    {isDropdownVisible === item._id && (
+                    {isDropdownVisible === post._id && (
                       <div className="dropdown-content absolute bg-white font-semibold border rounded shadow-md right-3 top-[25px] min-w-[80px] z-10">
                         <p
                           className="p-2 hover:bg-gray-100 cursor-pointer text-xs"
-                          onClick={() => deletePost(item._id)}
+                          onClick={() => deletePost(post._id)}
                         >
                           Delete Post
                         </p>
@@ -592,13 +449,13 @@ const Posts = () => {
               {/* Post Content */}
               <div className="pt-2 mx-12">
                 <div>
-                  <p className="text-gray-900 leading-relaxed">{item.text}</p>
+                  <p className="text-gray-900 leading-relaxed">{post.text}</p>
                 </div>
-                {item.imageURL && (
+                {post.media[0] && (
                   <div>
                     <img
                       className="w-full h-[20rem] rounded-md object-cover mt-4"
-                      src={`https://picsum.photos/600/400?random=${item._id}`}
+                      src={`http://localhost:3001${post.media[0]}`}
                       alt="post"
                     />
                   </div>
@@ -608,9 +465,9 @@ const Posts = () => {
               {/* Post Actions */}
               <div className="flex mt-5 justify-between px-4 text-gray-600 mx-12">
                 <button
-                  onClick={() => handleLikeClick(item._id)}
+                  onClick={() => handleLikeClick(post._id)}
                   className={`flex items-center gap-2 p-2 rounded-full transition-colors ${
-                    item.likes.includes(userId)
+                    post.likes.includes(userId)
                       ? "text-red-500 bg-red-50 hover:bg-red-100"
                       : "hover:bg-gray-100"
                   }`}
@@ -618,34 +475,34 @@ const Posts = () => {
                   <Heart
                     size={25}
                     className={
-                      item.likes.includes(userId) ? "fill-current" : ""
+                      post.likes.includes(userId) ? "fill-current" : ""
                     }
                   />
-                  <span className="text-sm">{item.likes.length}</span>
+                  <span className="text-sm">{post.likes.length}</span>
                 </button>
 
                 <button className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition-colors">
                   <MessageCircle size={25} />
-                  <span className="text-sm">{item.comments}</span>
+                  <span className="text-sm">{post.comments}</span>
                 </button>
 
                 <button
-                  onClick={() => handleBookmarkClick(item._id)}
+                  onClick={() => handleBookmarkClick(post._id)}
                   className={`flex items-center gap-2 p-2 rounded-full transition-colors ${
-                    item.bookmarked
+                    post.bookmarked
                       ? "text-blue-500 bg-blue-50 hover:bg-blue-100"
                       : "hover:bg-gray-100"
                   }`}
                 >
                   <Bookmark
                     size={25}
-                    className={item.bookmarked ? "fill-current" : ""}
+                    className={post.bookmarked ? "fill-current" : ""}
                   />
                 </button>
 
                 <button className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition-colors">
                   <Share2 size={25} />
-                  <span className="text-sm">{item.shares}</span>
+                  <span className="text-sm">{post.shares}</span>
                 </button>
               </div>
             </div>

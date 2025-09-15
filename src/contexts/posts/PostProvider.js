@@ -24,7 +24,7 @@ export const PostProvider = ({ children }) => {
   const { userAuthState, isLoading } = useAuth();
   let user = {};
   if (!isLoading) {
-    user = userAuthState?.user._doc;
+    user = userAuthState?.user._id;
   }
   const { serverResponse, error } = useFetch(
     postState.apiURL,
@@ -33,10 +33,10 @@ export const PostProvider = ({ children }) => {
   );
 
   useEffect(() => {
-    postDispatch({ type: "GET_POSTS" });
-  }, []);
-
-  useEffect(() => {});
+    if (!isLoading && userAuthState?.isUserLoggedIn) {
+      postDispatch({ type: "GET_POSTS" });
+    }
+  }, [isLoading, userAuthState]);
 
   // useEffect(() => {
   //   if (serverResponse) {
@@ -57,19 +57,22 @@ export const PostProvider = ({ children }) => {
   useEffect(() => {
     if (serverResponse) {
       const handleResponse = () => {
-        const { action, posts, id, savedPost } = serverResponse.data;
+        const { action, posts, savedPost } = serverResponse.data;
+        console.log(savedPost);
+        
         switch (action) {
-          case "getPosts":
+          case "feedPosts":
             setPosts(posts);
             break;
-          case "createPost":
-            setPosts((prevPosts) => [...prevPosts, savedPost]);
+          case "postAdded":
+            setPosts((prevPosts) => [savedPost, ...prevPosts]); // Add new post to beginning
+            postDispatch({ type: "GET_POSTS" });
             Toast({ type: "success", msg: "post created successfully" });
             break;
           case "deletePost":
-            setPosts((prevPosts) =>
-              prevPosts.filter((post) => post._id !== id)
-            );
+            // setPosts((prevPosts) =>
+            //   prevPosts.filter((post) => post._id !== id)
+            // );
             break;
 
           case "like":
@@ -93,9 +96,9 @@ export const PostProvider = ({ children }) => {
     }
   }, [serverResponse]);
 
-  const sendData = async (data) => {
+  const addPost = async (data) => {
     postDispatch({
-      type: "POST",
+      type: "ADD_POST",
       payload: data,
     });
   };
@@ -121,7 +124,7 @@ export const PostProvider = ({ children }) => {
       value={{
         posts,
         setPosts,
-        sendData,
+        addPost,
         serverResponse,
         deletePost,
         postDispatch,

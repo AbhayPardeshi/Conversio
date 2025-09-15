@@ -11,8 +11,10 @@ const ProfilePage = ({ isOpen, onClose }) => {
     useAuth();
   let user = {};
   if (userAuthState.isUserLoggedIn) {
-    user = userAuthState.user._doc;
+    user = userAuthState.user;
   }
+ 
+  
   const initialUserData = {
     apiURL: "",
     method: "GET",
@@ -45,15 +47,19 @@ const ProfilePage = ({ isOpen, onClose }) => {
 
   const submitHandler = async (event) => {
     event.preventDefault();
-    const data = { name, bio, image, userEmail: user.email };
+    console.log("Submitting form...");
+    const data = { name, bio, image};
+    console.log(data);
 
     if (data) {
+      console.log("inside if");
+      
       setUserData((prev) => {
         return {
           ...prev,
-          apiURL: "/user",
-          method: "POST",
-          postMethodData: { ...data },
+          apiURL: `/users/${user._id}`,
+          method: "PATCH",
+          postMethodData: { ...data }, 
         };
       });
     }
@@ -71,17 +77,17 @@ const ProfilePage = ({ isOpen, onClose }) => {
   };
 
   const closeModalHandler = () => {
-    setName(user.name);
+    setName(user.username);
     setBio(user.bio);
 
     onClose();
   };
 
   useEffect(() => {
-    if (user && user.name && user.bio) {
-      setName(user.name);
+    if (user && isLoading === false) {
+      setName(user.username);
       setBio(user.bio);
-      setImage(user.bioImageURL);
+      setImage(user.profilePicture);
     }
   }, [user]);
   return (

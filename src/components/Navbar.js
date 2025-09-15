@@ -10,7 +10,7 @@ import { useLocation } from "react-router-dom";
 const Navbar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { userAuthState, updateUserToken, isLoading } = useAuth();
-  const user = userAuthState?.user_doc;
+  const user = userAuthState?.user;
 
   const location = useLocation();
   const segments = location.pathname.split("/").filter(Boolean);
@@ -58,10 +58,10 @@ const Navbar = () => {
           </div>
 
           <div className="flex w-1/2 justify-end gap-1">
-            {user?.imageURL ? (
+            {user?.profilePicture ? (
               <img
                 className="w-[2.5rem] h-[2.5rem] rounded-full object-cover cursor-pointer"
-                src={user.imageURL}
+                src={user.profilePicture}
                 alt="user avatar"
                 onClick={() => setIsModalOpen(true)}
               />
@@ -70,7 +70,7 @@ const Navbar = () => {
                 className="w-[2.75rem] h-[2.75rem] flex items-center justify-center rounded-full bg-gray-400 text-white font-bold cursor-pointer"
                 onClick={() => setIsModalOpen(true)}
               >
-                {user?.name?.charAt(0) || "A"}
+                {user?.username?.charAt(0) || "A"}
               </div>
             )}
 

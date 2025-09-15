@@ -11,11 +11,24 @@ import { Toast } from "../../services/Toast";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
-const initialUserAuthState = {
-  user: {},
-  encodedToken: null,
-  isUserLoggedIn: false,
+const getInitialState = () => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    const decodedToken = jwtDecode(token);
+    return {
+      user: decodedToken,
+      encodedToken: token,
+      isUserLoggedIn: true,
+    };
+  }
+  return {
+    user: {},
+    encodedToken: null,
+    isUserLoggedIn: false,
+  };
 };
+
+const initialUserAuthState = getInitialState();
 
 const initialApiData = {
   apiURL: "",

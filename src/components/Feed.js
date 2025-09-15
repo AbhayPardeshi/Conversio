@@ -15,6 +15,7 @@ import { useFetch } from "../services/useFetch";
 import { usePost } from "../contexts/posts/PostProvider";
 import creationTime from "../utils/creationTime";
 import Posts from "./Post";
+import { useAuth } from "../contexts/auth/AuthProvider";
 
 const Feed = () => {
   const fileInputRef = useRef(null);
@@ -22,19 +23,27 @@ const Feed = () => {
   const [postImage, setPostImage] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
 
-  const { sendData, posts } = usePost();
-  const reversePost = [...posts].reverse();
+  const { addPost, postDispatch, posts } = usePost();
+  const { userAuthState, isLoading } = useAuth();
+  const user = userAuthState?.user;
+
 
   const setPostHandler = async () => {
+    
     const file = postImage;
     var formData = new FormData();
+    formData.append("userId", user.id);
     formData.append("text", postText);
     formData.append("file", file);
 
-    await sendData(formData);
-    setPostText("");
-    setPostImage("");
-    setImagePreview("");
+    try {
+      await addPost(formData);
+      setPostText("");
+      setPostImage("");
+      setImagePreview("");
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
   };
 
   const setPostTextHandler = (e) => {
@@ -62,7 +71,7 @@ const Feed = () => {
           <div className="mt-[0.40rem]">
             <img
               className="w-[2.15rem] h-[2.1rem] rounded-full object-cover"
-              src="./assets/images/user1.jfif"
+              src={user?.profilePicture}
               alt="user"
             />
           </div>
@@ -141,11 +150,8 @@ const Feed = () => {
         {/* Post Area End */}
 
         {/* List of All Post */}
-        {/* {reversePost?.map((item, index) => {
-          return <Posts item={item} index={index} />;
-        })} */}
 
-        <Posts />
+        <Posts posts={posts} />
       </section>
     </>
   );

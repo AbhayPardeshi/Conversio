@@ -1,5 +1,5 @@
 const GET_POSTS = "GET_POSTS";
-const POST = "POST";
+const ADD_POST = "ADD_POST";
 const DELETE_ONE_POST = "DELETE_ONE_POST";
 const LIKE_POST = "LIKE_POST";
 const DISLIKE_POST = "DISLIKE_POST";
@@ -11,13 +11,13 @@ const postReducer = (state, action) => {
     case GET_POSTS:
       return {
         ...state,
-        apiURL: "/posts",
+        apiURL: "/api/posts",
         method: "GET",
       };
-    case POST:
+    case ADD_POST:
       return {
         ...state,
-        apiURL: "/posts",
+        apiURL: "/api/posts",
         method: "POST",
         postMethodData: payload,
         isFile: true,
