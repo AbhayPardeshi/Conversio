@@ -95,6 +95,8 @@ const AuthProvider = ({ children }) => {
   };
 
   const updateUserToken = (token) => {
+  
+  
     const decodedToken = jwtDecode(token, process.env.USER_PWD_SECRET);
     userAuthDispatch({
       type: "LOGIN",

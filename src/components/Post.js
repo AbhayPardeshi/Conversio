@@ -344,8 +344,6 @@ const currentUser = {
 };
 
 const Posts = ({ posts, setPosts, deletePost }) => {
-  console.log(posts);
-  
   //const { posts, setPosts, deletePost, dislikePost, likePost } = usePost();
   //const [posts, setPosts] = useState(samplePostsData);
   const [isDropdownVisible, setIsDropdownVisible] = useState(null);

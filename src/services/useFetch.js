@@ -42,6 +42,16 @@ export const useFetch = (
           }
 
           break;
+
+        case "PATCH":
+          serverResponse = await axios.patch(API_URL, postMethodData, {
+            headers: {
+              authorization: encodedToken,
+              "Content-Type": "multipart/form-data",
+            },
+          });
+          break;
+
         case "DELETE":
           serverResponse = await axios.delete(API_URL, {
             headers: {

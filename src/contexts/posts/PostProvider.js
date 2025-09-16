@@ -58,7 +58,6 @@ export const PostProvider = ({ children }) => {
     if (serverResponse) {
       const handleResponse = () => {
         const { action, posts, savedPost } = serverResponse.data;
-        console.log(savedPost);
         
         switch (action) {
           case "feedPosts":

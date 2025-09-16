@@ -1,31 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { IoMdClose } from "react-icons/io";
 import { MdOutlineCameraEnhance } from "react-icons/md";
-import { useRef } from "react";
 import { useAuth } from "../../contexts/auth/AuthProvider";
 import { useFetch } from "../../services/useFetch";
 import { Toast } from "../../services/Toast";
+
 const ProfilePage = ({ isOpen, onClose }) => {
   const filePickerRef = useRef();
   const { userAuthState, updateUserToken, isLoading, logoutHandler } =
     useAuth();
+
   let user = {};
   if (userAuthState.isUserLoggedIn) {
     user = userAuthState.user;
   }
- 
-  
+
   const initialUserData = {
     apiURL: "",
     method: "GET",
-    postMethodData: {},
+    postMethodData: null,
     encodedToken: "",
   };
 
   const [userData, setUserData] = useState(initialUserData);
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(null); // file object
+  const [preview, setPreview] = useState(null); // preview url
+
   const { apiURL, method, postMethodData, encodedToken } = userData;
 
   const { serverResponse, error } = useFetch(
@@ -36,60 +38,66 @@ const ProfilePage = ({ isOpen, onClose }) => {
   );
 
   const handleImageChange = (e) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.readyState === 2) {
-        setImage(reader.result);
-      }
-    };
-    reader.readAsDataURL(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setPreview(URL.createObjectURL(file)); // for preview only
+    }
   };
 
   const submitHandler = async (event) => {
     event.preventDefault();
-    console.log("Submitting form...");
-    const data = { name, bio, image};
-    console.log(data);
 
-    if (data) {
-      console.log("inside if");
-      
-      setUserData((prev) => {
-        return {
-          ...prev,
-          apiURL: `/users/${user._id}`,
-          method: "PATCH",
-          postMethodData: { ...data }, 
-        };
-      });
-    }
-    const response = await serverResponse?.data?.encodedToken;
-    if (response) {
-      console.log("hello");
+    // Build formData for multer
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("bio", bio);
+    if (image) formData.append("file", image);
+
+    setUserData((prev) => {
+      return {
+        ...prev,
+        apiURL: `/api/users/${user.id}`,
+        method: "PATCH",
+        postMethodData: formData,
+        encodedToken: userAuthState.encodedToken,
+      };
+    });
+  };
+
+  // watch for response
+  useEffect(() => {
+    if (serverResponse?.data?.encodedToken) {
       updateUserToken(serverResponse.data.encodedToken);
+      if (serverResponse.data.user?.profilePicture) {
+        setPreview(serverResponse.data.user.profilePicture);
+        setImage(null);
+      }
       onClose();
-
       Toast({
         type: "success",
         msg: "User info updated!",
       });
     }
-  };
+  }, [serverResponse]);
 
   const closeModalHandler = () => {
-    setName(user.username);
+    setUsername(user.username);
     setBio(user.bio);
-
+    setImage(null);
     onClose();
   };
 
   useEffect(() => {
     if (user && isLoading === false) {
-      setName(user.username);
+      setUsername(user.username);
       setBio(user.bio);
-      setImage(user.profilePicture);
+      if (!preview) {
+        setPreview(user.profilePicture);
+      }
     }
-  }, [user]);
+  }, [user, isLoading, isOpen]);
+
   return (
     <div
       className={`fixed bg-transparent items-center w-[100%] h-[100%] left-0 bottom-0 flex justify-center
@@ -116,15 +124,13 @@ const ProfilePage = ({ isOpen, onClose }) => {
           </button>
         </div>
         <div
-          className="flex justify-center 
-        onHover:bg-gray-100 p-[20px] rounded-xl
-        "
+          className="flex justify-center onHover:bg-gray-100 p-[20px] rounded-xl"
           onClick={() => filePickerRef.current.click()}
         >
           <div
             className="w-[100px] h-[100px] rounded-full object-cover bg-gray-500 flex justify-center items-center cursor-pointer"
             style={{
-              backgroundImage: `url(${image})`,
+              backgroundImage: `url(${preview})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
@@ -146,8 +152,8 @@ const ProfilePage = ({ isOpen, onClose }) => {
           <div className="font-bold">Name</div>
           <textarea
             className="h-[30px] resize-none outline-none text-md bg-slate-200 text-gray-800"
-            onChange={(e) => setName(e.target.value)}
-            value={name}
+            onChange={(e) => setUsername(e.target.value)}
+            value={username}
           ></textarea>
         </div>
         <div className="flex flex-col text-black bg-slate-200 border-black mx-10 mt-2 p-2">
