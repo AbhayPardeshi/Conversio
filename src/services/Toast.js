@@ -5,7 +5,7 @@ export const Toast = ({ type, msg }) => {
   console.log(msg);
   return toast(msg, {
     position: "top-right",
-    autoClose: 5000,
+    autoClose: 500,
     hideProgressBar: false,
     closeOnClick: true,
     pauseOnHover: true,

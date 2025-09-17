@@ -4,16 +4,15 @@ import { MdOutlineCameraEnhance } from "react-icons/md";
 import { useAuth } from "../../contexts/auth/AuthProvider";
 import { useFetch } from "../../services/useFetch";
 import { Toast } from "../../services/Toast";
+import { useUser } from "../../contexts/user/UserProvider";
 
 const ProfilePage = ({ isOpen, onClose }) => {
   const filePickerRef = useRef();
   const { userAuthState, updateUserToken, isLoading, logoutHandler } =
     useAuth();
-
-  let user = {};
-  if (userAuthState.isUserLoggedIn) {
-    user = userAuthState.user;
-  }
+                 
+  const {userState, isUserloading} = useUser();
+  
 
   const initialUserData = {
     apiURL: "",
@@ -57,7 +56,7 @@ const ProfilePage = ({ isOpen, onClose }) => {
     setUserData((prev) => {
       return {
         ...prev,
-        apiURL: `/api/users/${user.id}`,
+        apiURL: `/api/users/${userState._id}`,
         method: "PATCH",
         postMethodData: formData,
         encodedToken: userAuthState.encodedToken,
@@ -67,11 +66,22 @@ const ProfilePage = ({ isOpen, onClose }) => {
 
   // watch for response
   useEffect(() => {
+    
+    
     if (serverResponse?.data?.encodedToken) {
+      console.log(serverResponse.data.bio);
+
       updateUserToken(serverResponse.data.encodedToken);
       if (serverResponse.data.user?.profilePicture) {
         setPreview(serverResponse.data.user.profilePicture);
         setImage(null);
+      }
+      if (serverResponse.data.user?.username) {
+        setUsername(serverResponse.data.user.username);
+      }
+      if (serverResponse.data.user?.bio) {
+        setBio(serverResponse.data.user.bio);
+        
       }
       onClose();
       Toast({
@@ -82,21 +92,21 @@ const ProfilePage = ({ isOpen, onClose }) => {
   }, [serverResponse]);
 
   const closeModalHandler = () => {
-    setUsername(user.username);
-    setBio(user.bio);
+    setUsername(userState.username);
+    setBio(userState.bio);
     setImage(null);
     onClose();
   };
 
   useEffect(() => {
-    if (user && isLoading === false) {
-      setUsername(user.username);
-      setBio(user.bio);
+    if (userState && isLoading === false) {
+      setUsername(userState.username);
+      setBio(userState.bio);
       if (!preview) {
-        setPreview(user.profilePicture);
+        setPreview(userState.profilePicture);
       }
     }
-  }, [user, isLoading, isOpen]);
+  }, [userState, isLoading, isOpen]);
 
   return (
     <div

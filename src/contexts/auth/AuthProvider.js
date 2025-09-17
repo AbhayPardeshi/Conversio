@@ -10,6 +10,7 @@ import { useFetch } from "../../services/useFetch";
 import { Toast } from "../../services/Toast";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { useUser } from "../user/UserProvider";
 
 const getInitialState = () => {
   const token = localStorage.getItem("token");
@@ -40,7 +41,6 @@ const AuthContext = createContext();
 const useAuth = () => useContext(AuthContext);
 
 const AuthProvider = ({ children }) => {
-  
   const [userAuthState, userAuthDispatch] = useReducer(
     authReducer,
     initialUserAuthState
@@ -49,6 +49,7 @@ const AuthProvider = ({ children }) => {
   const [apiData, setApiData] = useState(initialApiData);
   const { apiURL, method, postMethodData, encodedToken } = apiData;
   const [isLoading, setIsLoading] = useState(true);
+  const { getUserData } = useUser();
 
   // change in apiData will call useFetch
   const { serverResponse, error } = useFetch(
@@ -69,7 +70,6 @@ const AuthProvider = ({ children }) => {
       });
     }
   };
-
 
   const loginHandler = (data) => {
     if (data) {
@@ -95,8 +95,6 @@ const AuthProvider = ({ children }) => {
   };
 
   const updateUserToken = (token) => {
-  
-  
     const decodedToken = jwtDecode(token, process.env.USER_PWD_SECRET);
     userAuthDispatch({
       type: "LOGIN",
@@ -124,6 +122,13 @@ const AuthProvider = ({ children }) => {
         });
         localStorage.setItem("token", token);
 
+        if (decodedToken?.id) {
+          console.log("Calling getUserData with ID:", decodedToken);
+          getUserData(decodedToken.id);
+        } else {
+          console.error("No _id found in decoded token:", decodedToken);
+        }
+
         Toast({
           type: "success",
           msg: `Logged in as ${decodedToken.username}`,
@@ -137,6 +142,8 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     let setTimeOutId;
     setTimeOutId = setTimeout(() => {
+      console.log("hi");
+
       const encodedTokenTemp = localStorage.getItem("token");
       if (encodedTokenTemp) {
         const decodedToken = jwtDecode(
@@ -151,8 +158,13 @@ const AuthProvider = ({ children }) => {
             user: { ...decodedToken },
           },
         });
+        if (decodedToken?.id) {
+          console.log("Calling getUserData with ID:", decodedToken);
+          getUserData(decodedToken.id);
+        } else {
+          console.error("No _id found in decoded token:", decodedToken);
+        }
 
-     
         setIsLoading(false);
         navigate("/");
       }

@@ -17,19 +17,19 @@ import creationTime from "../utils/creationTime";
 import Posts from "./Post";
 import { useAuth } from "../contexts/auth/AuthProvider";
 
+
 const Feed = () => {
   const fileInputRef = useRef(null);
   const [postText, setPostText] = useState("");
   const [postImage, setPostImage] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
 
-  const { addPost, postDispatch, posts } = usePost();
+  const { addPost, postDispatch, posts, loadMorePosts, hasMore } = usePost();
   const { userAuthState, isLoading } = useAuth();
+
   const user = userAuthState?.user;
 
-
   const setPostHandler = async () => {
-    
     const file = postImage;
     var formData = new FormData();
     formData.append("userId", user.id);
@@ -151,7 +151,7 @@ const Feed = () => {
 
         {/* List of All Post */}
 
-        <Posts posts={posts} />
+        <Posts posts={posts} loadMorePosts={loadMorePosts} hasMore={hasMore} />
       </section>
     </>
   );

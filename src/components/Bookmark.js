@@ -7,6 +7,10 @@ import {
   MoreHorizontal,
   Trash2,
 } from "lucide-react";
+import { useUser } from "../contexts/user/UserProvider";
+import { usePost } from "../contexts/posts/PostProvider";
+
+
 
 // Mock data for bookmarked posts
 const bookmarkedPostsData = [
@@ -78,7 +82,10 @@ const bookmarkedPostsData = [
 ];
 
 const BookmarksPage = () => {
+  const { userState } = useUser();
+  const {posts} = usePost();
   const [bookmarks, setBookmarks] = useState(bookmarkedPostsData);
+  
   const [currentUserId] = useState("user1"); // Mock current user ID
 
   const formatTimeAgo = (dateString) => {

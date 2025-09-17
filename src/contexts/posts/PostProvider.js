@@ -20,6 +20,8 @@ export const usePost = () => useContext(PostContext);
 
 export const PostProvider = ({ children }) => {
   const [posts, setPosts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [postState, postDispatch] = useReducer(postReducer, initialState);
   const { userAuthState, isLoading } = useAuth();
   let user = {};
@@ -34,59 +36,41 @@ export const PostProvider = ({ children }) => {
 
   useEffect(() => {
     if (!isLoading && userAuthState?.isUserLoggedIn) {
-      postDispatch({ type: "GET_POSTS" });
+      postDispatch({ type: "GET_POSTS", payload: { page: 1, limit: 10 } });
     }
   }, [isLoading, userAuthState]);
-
-  // useEffect(() => {
-  //   if (serverResponse) {
-  //     // Update posts only if the server response is successful
-  //     if (serverResponse.status === 200) {
-  //       setPosts(serverResponse.data.posts);
-  //     } else if (serverResponse && serverResponse.status === 201) {
-  //       setPosts((prevPosts) => [...prevPosts, serverResponse.data]);
-  //     }else if (serverResponse && serverResponse.status === 202) {
-  //       setPosts((prevPosts) => prevPosts.filter((post) => post.id !== serverResponse.data.id));
-  //     }
-  //     else {
-  //       console.error("Failed to fetch posts:", serverResponse.status);
-  //     }
-  //   }
-  // }, [serverResponse]);
 
   useEffect(() => {
     if (serverResponse) {
       const handleResponse = () => {
-        const { action, posts, savedPost } = serverResponse.data;
-        
+        const { action, posts, savedPost, pagination, message } =
+          serverResponse.data;
+
         switch (action) {
           case "feedPosts":
-            setPosts(posts);
+            if (pagination.page === 1) {
+              setPosts(posts);
+            } else {
+              setPosts((prev) => [...prev, ...posts]);
+            }
+            setHasMore(pagination.hasMore);
             break;
+
           case "postAdded":
             setPosts((prevPosts) => [savedPost, ...prevPosts]); // Add new post to beginning
             postDispatch({ type: "GET_POSTS" });
             Toast({ type: "success", msg: "post created successfully" });
             break;
-          case "deletePost":
-            // setPosts((prevPosts) =>
-            //   prevPosts.filter((post) => post._id !== id)
-            // );
+          case "postBookmarked":
+            Toast({ type: "success", msg: "post bookmarked successfully" });
             break;
 
-          case "like":
-            setPosts(posts);
-            Toast({ type: "success", msg: "post liked successfully" });
+          case "postLiked":
+            setPosts((prevPosts) =>
+              prevPosts.map((post) => (post._id === posts._id ? posts : post))
+            );
 
             break;
-
-          case "dislike":
-            setPosts(posts);
-            Toast({ type: "success", msg: "post disliked successfully" });
-
-            break;
-
-          default:
             console.error("Unknown action:", action);
         }
       };
@@ -95,7 +79,20 @@ export const PostProvider = ({ children }) => {
     }
   }, [serverResponse]);
 
+  const loadMorePosts = () => {
+    if (hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      postDispatch({
+        type: "GET_POSTS",
+        payload: { page: nextPage, limit: 5 },
+      });
+    }
+  };
+
   const addPost = async (data) => {
+    console.log(data);
+
     postDispatch({
       type: "ADD_POST",
       payload: data,
@@ -106,15 +103,14 @@ export const PostProvider = ({ children }) => {
     postDispatch({ type: "DELETE_ONE_POST", payload: id });
   };
 
-  const likePost = (id) => {
-    console.log(user._id);
-    postDispatch({ type: "LIKE_POST", payload: { id: id, userId: user._id } });
+  const likePost = (id, userId) => {
+    postDispatch({ type: "LIKE_POST", payload: { id: id, userId: userId } });
   };
 
-  const dislikePost = (id) => {
+  const bookmarkPost = (id, userId) => {
     postDispatch({
-      type: "DISLIKE_POST",
-      payload: { id: id, userId: user._id },
+      type: "BOOKMARK_POST",
+      payload: { id: id, userId: userId },
     });
   };
 
@@ -128,7 +124,9 @@ export const PostProvider = ({ children }) => {
         deletePost,
         postDispatch,
         likePost,
-        dislikePost,
+        loadMorePosts,
+        bookmarkPost,
+        hasMore,
       }}
     >
       {children}

@@ -6,17 +6,20 @@ import { AuthProvider } from "../src/contexts/auth/AuthProvider";
 import { PostProvider } from "./contexts/posts/PostProvider";
 import { BrowserRouter } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import { UserProvider } from "./contexts/user/UserProvider";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <PostProvider>
-          <App />
-          <ToastContainer />
-        </PostProvider>
-      </AuthProvider>
+      <UserProvider>
+        <AuthProvider>
+          <PostProvider>
+            <App />
+            <ToastContainer />
+          </PostProvider>
+        </AuthProvider>
+      </UserProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
