@@ -1,9 +1,8 @@
 const UPDATE_USER_DETAILS = "UPDATE_USER_DETAILS";
+const UPDATE_BOOKMARK_POST = "UPDATE_BOOKMARK_POST";
 
 export const userReducer = (state, action) => {
   const { type, payload } = action;
-
-  console.log(payload);
 
   switch (type) {
     case UPDATE_USER_DETAILS:
@@ -21,7 +20,18 @@ export const userReducer = (state, action) => {
         likedPosts: payload.likedPosts || state.likedPosts,
       };
 
+    case UPDATE_BOOKMARK_POST:
+      const postId = payload; // assume payload is a single post id
+      const isBookmarked = state.bookmarkedPosts.includes(postId);
+
+      return {
+        ...state,
+        bookmarkedPosts: isBookmarked
+          ? state.bookmarkedPosts.filter((id) => id !== postId) // remove
+          : [...state.bookmarkedPosts, postId], // add
+      };
+
     default:
-      break;
+      return state;
   }
 };

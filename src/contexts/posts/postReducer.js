@@ -38,13 +38,13 @@ const postReducer = (state, action) => {
         postMethodData: payload,
       };
 
-    case BOOKMARK_POST:
-      return {
-        ...state,
-        apiURL: `/api/bookmark/${payload.id}`,
-        method: "POST",
-        postMethodData: payload,
-      };
+    // case BOOKMARK_POST:
+    //   return {
+    //     ...state,
+    //     apiURL: `/api/bookmark/${payload.id}`,
+    //     method: "POST",
+    //     postMethodData: payload,
+    //   };
 
     default:
       return state;

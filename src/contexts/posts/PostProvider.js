@@ -107,12 +107,12 @@ export const PostProvider = ({ children }) => {
     postDispatch({ type: "LIKE_POST", payload: { id: id, userId: userId } });
   };
 
-  const bookmarkPost = (id, userId) => {
-    postDispatch({
-      type: "BOOKMARK_POST",
-      payload: { id: id, userId: userId },
-    });
-  };
+  // const bookmarkPost = (id, userId) => {
+  //   postDispatch({
+  //     type: "BOOKMARK_POST",
+  //     payload: { id: id, userId: userId },
+  //   });
+  // };
 
   return (
     <PostContext.Provider
@@ -125,7 +125,6 @@ export const PostProvider = ({ children }) => {
         postDispatch,
         likePost,
         loadMorePosts,
-        bookmarkPost,
         hasMore,
       }}
     >

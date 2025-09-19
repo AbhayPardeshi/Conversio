@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Bookmark,
   Heart,
@@ -8,85 +8,29 @@ import {
   Trash2,
 } from "lucide-react";
 import { useUser } from "../contexts/user/UserProvider";
+import { useFetch } from "../services/useFetch";
 import { usePost } from "../contexts/posts/PostProvider";
 
-
-
-// Mock data for bookmarked posts
-const bookmarkedPostsData = [
-  {
-    _id: "1",
-    text: "Just finished reading an amazing book about React patterns. The way they explain hooks and context is incredible! 📚✨",
-    imageURL: null,
-    date: "2024-01-15T10:30:00Z",
-    likes: ["user1", "user2", "user3"],
-    bookmarked: true,
-    user: {
-      name: "Lauren Wilson",
-      username: "laurenwilson",
-      avatar: "https://i.pravatar.cc/150?img=1",
-    },
-  },
-  {
-    _id: "2",
-    text: "Beautiful sunset from my hiking trip last weekend. Nature never fails to amaze me! 🌅",
-    imageURL: "/api/placeholder/500/400",
-    date: "2024-01-14T18:45:00Z",
-    likes: ["user1", "user4", "user5"],
-    bookmarked: true,
-    user: {
-      name: "Kelly Tran",
-      username: "kellytran",
-      avatar: "https://i.pravatar.cc/150?img=3",
-    },
-  },
-  {
-    _id: "3",
-    text: "Working on a new design system for our team. The component library is coming together nicely! 🎨",
-    imageURL: null,
-    date: "2024-01-13T14:20:00Z",
-    likes: ["user1", "user6"],
-    bookmarked: true,
-    user: {
-      name: "Janice Contreras",
-      username: "janicecontreras",
-      avatar: "https://i.pravatar.cc/150?img=2",
-    },
-  },
-  {
-    _id: "4",
-    text: "Coffee and code - the perfect combination for a productive morning ☕💻",
-    imageURL: "/api/placeholder/500/300",
-    date: "2024-01-12T09:15:00Z",
-    likes: ["user1", "user2", "user7", "user8"],
-    bookmarked: true,
-    user: {
-      name: "Linda Sullivan",
-      username: "lindasullivan",
-      avatar: "https://i.pravatar.cc/150?img=4",
-    },
-  },
-  {
-    _id: "5",
-    text: "Excited to share my latest project! Built a full-stack application with React and Node.js. The learning journey continues! 🚀",
-    imageURL: null,
-    date: "2024-01-11T16:30:00Z",
-    likes: ["user1", "user9"],
-    bookmarked: true,
-    user: {
-      name: "Joan Jones",
-      username: "joanjones",
-      avatar: "https://i.pravatar.cc/150?img=5",
-    },
-  },
-];
-
 const BookmarksPage = () => {
-  const { userState } = useUser();
-  const {posts} = usePost();
-  const [bookmarks, setBookmarks] = useState(bookmarkedPostsData);
-  
-  const [currentUserId] = useState("user1"); // Mock current user ID
+  const { userState, bookmarkPost } = useUser();
+  const { likePost } = usePost();
+  const [bookmarks, setBookmarks] = useState("");
+
+  const userId = userState._id;
+
+  const { serverResponse, isLoading, error } = useFetch(
+    userId ? `/api/bookmark/${userId}` : null,
+    "GET"
+  );
+
+  useEffect(() => {
+    if (serverResponse) {
+      const { action, bookmarkedPosts } = serverResponse.data;
+      if (action === "userBookmarks") {
+        setBookmarks(bookmarkedPosts);
+      }
+    }
+  }, [serverResponse]);
 
   const formatTimeAgo = (dateString) => {
     const now = new Date();
@@ -100,23 +44,27 @@ const BookmarksPage = () => {
     return postDate.toLocaleDateString();
   };
 
-  const handleRemoveBookmark = (postId) => {
-    setBookmarks((prev) => prev.filter((post) => post._id !== postId));
-  };
-
   const handleLikeClick = (postId) => {
+    likePost(postId, userId); // call PostProvider to update backend
+
+    // Optimistically update UI
     setBookmarks((prev) =>
       prev.map((post) =>
         post._id === postId
           ? {
               ...post,
-              likes: post.likes.includes(currentUserId)
-                ? post.likes.filter((id) => id !== currentUserId)
-                : [...post.likes, currentUserId],
+              likes: post.likes.includes(userId)
+                ? post.likes.filter((id) => id !== userId)
+                : [...post.likes, userId],
             }
           : post
       )
     );
+  };
+
+  const handleRemoveBookmark = (postId) => {
+    bookmarkPost(postId, userId);
+    setBookmarks((prev) => prev.filter((post) => post._id !== postId));
   };
 
   return (
@@ -158,21 +106,21 @@ const BookmarksPage = () => {
                   <div className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3">
                       <img
-                        src={post.user.avatar}
+                        src={post.user.profilePicture}
                         alt={post.user.name}
                         className="w-10 h-10 rounded-full object-cover"
                       />
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold text-gray-900">
-                            {post.user.name}
+                            {post.user.username}
                           </span>
                           <span className="text-gray-500 text-sm">
                             @{post.user.username}
                           </span>
                           <span className="text-gray-400 text-sm">•</span>
                           <span className="text-gray-500 text-sm">
-                            {formatTimeAgo(post.date)}
+                            {formatTimeAgo(post.createdAt)}
                           </span>
                         </div>
                       </div>
@@ -189,10 +137,10 @@ const BookmarksPage = () => {
                   <div className="px-4 pb-3">
                     <p className="text-gray-900 leading-relaxed">{post.text}</p>
 
-                    {post.imageURL && (
+                    {post.media.length > 0 && (
                       <div className="mt-3">
                         <img
-                          src={`https://picsum.photos/500/400?random=${post._id}`}
+                          src={`http://localhost:3001${post.media}`}
                           alt="Post content"
                           className="w-full rounded-lg object-cover max-h-96"
                         />
@@ -206,16 +154,14 @@ const BookmarksPage = () => {
                       <button
                         onClick={() => handleLikeClick(post._id)}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors ${
-                          post.likes.includes(currentUserId)
+                          post.likes.includes(userId)
                             ? "text-red-500 bg-red-50 hover:bg-red-100"
                             : "text-gray-500 hover:text-red-500 hover:bg-red-50"
                         }`}
                       >
                         <Heart
                           className={`w-5 h-5 ${
-                            post.likes.includes(currentUserId)
-                              ? "fill-current"
-                              : ""
+                            post.likes.includes(userId) ? "fill-current" : ""
                           }`}
                         />
                         <span className="text-sm font-medium">

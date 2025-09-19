@@ -12,14 +12,11 @@ import creationTime from "../utils/creationTime";
 import { useUser } from "../contexts/user/UserProvider";
 
 const Posts = () => {
-  const { posts, deletePost, likePost, loadMorePosts, hasMore, bookmarkPost } = usePost();
+  const { posts, deletePost, likePost, loadMorePosts, hasMore } = usePost();
   const { userAuthState, isLoading } = useAuth();
-  const { userState } = useUser();
-
+  const { userState,bookmarkPost } = useUser();
   const [isDropdownVisible, setIsDropdownVisible] = useState(null);
 
-  console.log(userState);
-  
   let userId = null;
   if (!isLoading) {
     userId = userAuthState?.user?.id;

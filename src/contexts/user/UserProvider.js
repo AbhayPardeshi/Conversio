@@ -6,7 +6,7 @@ import {
   useState,
   useEffect,
 } from "react";
-import {userReducer} from "./userReducer";
+import { userReducer } from "./userReducer";
 import { Toast } from "../../services/Toast";
 
 const userData = {
@@ -39,17 +39,12 @@ export const UserProvider = ({ children }) => {
   const { apiURL, method, userMethodData, encodedToken } = apiData;
   const [isUserLoading, setIsUserLoading] = useState(true);
 
-  const { serverResponse, error } = useFetch(
-    apiURL,
-    method,
-    userMethodData,
-    userData
-  );
+  const { serverResponse, error } = useFetch(apiURL, method, userMethodData);
 
   const getUserData = (userId) => {
     if (userId) {
-        console.log("hello inside getUserData");
-        
+      console.log("hello inside getUserData");
+
       //userDispatch({ type: "GET_USER_DETAILS", payload: { userId: userId } });
       setApiData((prev) => {
         return {
@@ -61,19 +56,42 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  const updateBookmarks = (postId)=>{
+  const updateBookmarks = (postId) => {
     userDispatch({ type: "GET_USER_DETAILS", payload: { postId: postId } });
-  }
+  };
+
+  const bookmarkPost = (postId, userId) => {
+    if (postId) {
+      setApiData((prev) => {
+        return {
+          ...prev,
+          apiURL: `/api/bookmark/${userId}`,
+          method: "POST",
+          userMethodData: { postId: postId },
+        };
+      });
+    }
+  };
 
   useEffect(() => {
     if (serverResponse) {
-      if (serverResponse.data.action === "setUser") {
-        console.log("serverresponse received");
-        
-        userDispatch({
-          type: "UPDATE_USER_DETAILS",
-          payload: { ...serverResponse.data.user },
-        });
+      switch (serverResponse.data.action) {
+        case "setUser":
+          userDispatch({
+            type: "UPDATE_USER_DETAILS",
+            payload: { ...serverResponse.data.user },
+          });
+          break;
+
+        case "postBookmarked":
+          userDispatch({
+            type: "UPDATE_BOOKMARK_POST",
+            payload: serverResponse.data.postId,
+          });
+          break;
+
+        default:
+          break;
       }
 
       setIsUserLoading(false);
@@ -82,7 +100,14 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider
-        value={{ userState, userDispatch, getUserData,userData,isUserLoading }}
+      value={{
+        userState,
+        userDispatch,
+        getUserData,
+        userData,
+        isUserLoading,
+        bookmarkPost,
+      }}
     >
       {children}
     </UserContext.Provider>
