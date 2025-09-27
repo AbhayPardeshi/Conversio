@@ -1,223 +1,310 @@
-import React, { useState } from "react";
-import './message.css';
-const contactsData = [
-  {
-    id: 1,
-    name: "Lauren Wilson",
-    lastMessage: "Help me open the door.",
-    time: "3h",
-    unread: 3,
-    avatar: "https://i.pravatar.cc/150?img=1",
-  },
-  {
-    id: 2,
-    name: "Janice Contreras",
-    lastMessage: "Who are these three?",
-    time: "6h",
-    unread: 0,
-    avatar: "https://i.pravatar.cc/150?img=2",
-  },
-  {
-    id: 3,
-    name: "Kelly Tran",
-    lastMessage: "You will be monitored😄",
-    time: "10h",
-    unread: 0,
-    avatar: "https://i.pravatar.cc/150?img=3",
-  },
-  {
-    id: 4,
-    name: "Linda Sullivan",
-    lastMessage: "Around 11 a.m.",
-    time: "13h",
-    unread: 4,
-    avatar: "https://i.pravatar.cc/150?img=4",
-  },
-  {
-    id: 5,
-    name: "Joan Jones",
-    lastMessage: "Is the head cute?",
-    time: "17h",
-    unread: 1,
-    avatar: "https://i.pravatar.cc/150?img=5",
-  },
-  // Added more contacts to demonstrate scrolling
-  // ...Array(15)
-  //   .fill(null)
-  //   .map((_, i) => ({
-  //     id: 6 + i,
-  //     name: `Extra Contact ${i + 1}`,
-  //     lastMessage: "More messages here...",
-  //     time: "1d",
-  //     unread: i % 3 === 0 ? 2 : 0,
-  //     avatar: `https://i.pravatar.cc/150?img=${6 + (i % 10)}`,
-  //   })),
-];
-
-const messagesData = [
-  {
-    id: 1,
-    sender: "other",
-    text: "Similar to the West Lake and Thousand Island Lake😂",
-  },
-  { id: 2, sender: "me", text: "what is that" },
-  {
-    id: 3,
-    sender: "other",
-    text: "I want to see some other ways to explain the scenic spots.",
-  },
-  { id: 4, sender: "me", text: "I do not know!" },
-  {
-    id: 5,
-    sender: "me",
-    text: "I don't use this kind of class very much.",
-    time: "9:31 am",
-  },
-  { id: 6, sender: "other", text: "Who are these three?" },
-  // Added more messages to demonstrate scrolling
-  // ...Array(20)
-  //   .fill(null)
-  //   .map((_, i) => ({
-  //     id: 7 + i,
-  //     sender: i % 2 === 0 ? "me" : "other",
-  //     text: `This is message number ${
-  //       i + 7
-  //     }. Lorem ipsum dolor sit amet, consectetur adipiscing elit.`,
-  //     time: i === 19 ? "10:15 am" : undefined,
-  //   })),
-];
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { io } from "socket.io-client";
+import { useFetch } from "../../services/useFetch"; // adjust the import path as needed
+import "./message.css";
+import axios from "axios";
+import { useUser } from "../../contexts/user/UserProvider";
+import { socket } from "../../utils/socket";
 
 const Message = () => {
-  const [selectedContact, setSelectedContact] = useState(contactsData[1]);
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [contactsData, setContactsData] = useState([]);
+  const [conversation, setConversation] = useState(null);
+  const [messages, setMessages] = useState([]); // [{_id, conversation, sender, text, createdAt}]
+  const [input, setInput] = useState("");
+  const [query, setQuery] = useState("");
+  const [searchUsers, setSearchUsers] = useState([]);
+
+  const messagesEndRef = useRef(null);
+
+  const { userState } = useUser();
+  const currentUserId = userState?._id;
+
+  useEffect(() => {
+    if (!selectedContact?._id) return;
+
+    socket.emit("joinDm", {
+      selfUserId: currentUserId,
+      otherUserId: selectedContact._id,
+    });
+  }, [selectedContact, currentUserId]);
+
+  useEffect(() => {
+    const handler = (msg) => {
+      if (
+        msg.roomId ===
+        `dm:${[currentUserId, selectedContact?._id].sort().join(":")}`
+      ) {
+        setMessages((prev) => [...prev, msg]);
+        scrollToBottom();
+      }
+    };
+    socket.on("newMessage", handler);
+    return () => socket.off("newMessage", handler);
+  }, [selectedContact?._id, currentUserId]);
+
+  useEffect(() => {
+    const fetchConversation = async () => {
+      if (!selectedContact?._id) return;
+
+      try {
+        // 1) Upsert DM conversation
+        const res = await axios.post("http://localhost:3001/api/chat/dm", {
+          userIdA: currentUserId,
+          userIdB: selectedContact._id,
+        });
+        const convo = res.data; // conversation object
+        setConversation(convo);
+
+        // 2) Fetch messages for this conversation
+        const messagesRes = await axios.get(
+          `http://localhost:3001/api/chat/${convo._id}/messages`
+        );
+        setMessages(messagesRes.data || []);
+      } catch (err) {
+        console.error("Error fetching conversation/messages", err);
+      }
+    };
+
+    fetchConversation();
+  }, [selectedContact?._id]);
+
+  const setSearchedUser = (user) => {
+    setContactsData((prev) => {
+      if (prev.some((c) => c._id === user._id)) return prev;
+      return [...prev, user];
+    });
+    setSelectedContact(user);
+    setQuery("");
+  };
+
+  // Typing indicator (optional)
+  const handleTyping = (val) => {
+    setInput(val);
+    if (!conversation?._id) return;
+    socket.emit("typing", {
+      roomId: conversation._id,
+      userId: currentUserId,
+      isTyping: val.length > 0,
+    });
+  };
+
+  // Send message via sockets
+  const send = () => {
+    const text = input.trim();
+    if (!text || !selectedContact || !conversation?._id) return;
+
+    socket.emit("sendDm", {
+      roomId: conversation._id,
+      message: { text, senderId: currentUserId },
+    });
+
+    setInput("");
+  };
+
+  const scrollToBottom = () => {
+    requestAnimationFrame(() => {
+      if (messagesEndRef.current)
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages.length]);
+
+  useEffect(() => {
+    const timeout = setTimeout(async () => {
+      if (!query.trim()) {
+        setSearchUsers([]);
+        return;
+      }
+      try {
+        const res = await axios.get(`http://localhost:3001/api/users`, {
+          params: { query },
+        });
+        if (res.data.action === "searchedUsers") {
+          setSearchUsers(res.data.userList);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [query]);
 
   return (
     <div className="flex bg-white h-[calc(100vh-70px)] shadow-lg rounded-lg overflow-hidden border-none">
       {/* Sidebar */}
       <div className="w-1/4 bg-white border-r flex flex-col">
-        {/* Search bar (fixed) */}
         <div className="p-4 border-b bg-white h-[5rem]">
           <input
             type="text"
             placeholder="Search..."
             className="w-full p-2 pl-6 border rounded focus:outline-none focus:border-blue-500 bg-gray-100 rounded-3xl"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
           />
         </div>
 
-        {/* Contact list (scrollable) */}
         <div className="flex-1 overflow-y-auto scrollbar-hide">
-          {contactsData.map((contact) => (
-            <div
-              key={contact.id}
-              className={`flex items-center p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 ${
-                selectedContact.id === contact.id
-                  ? "bg-blue-50 border-l-4 border-l-blue-500"
-                  : ""
-              }`}
-              onClick={() => setSelectedContact(contact)}
-            >
-              <img
-                src={contact.avatar}
-                alt=""
-                className="w-10 h-10 rounded-full mr-3 flex-shrink-0"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-semibold text-gray-900 truncate">
-                    {contact.name}
-                  </h3>
-                  <span className="text-xs text-gray-400 flex-shrink-0">
-                    {contact.time}
-                  </span>
+          {/* If search query exists, show filtered search results */}
+          {query.trim()
+            ? searchUsers.map((user) => (
+                <div
+                  key={user._id}
+                  className="flex items-center p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100"
+                  onClick={() => setSearchedUser(user)}
+                >
+                  <img
+                    src={user.profilePicture}
+                    alt={user.username}
+                    className="w-10 h-10 rounded-full mr-3 flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 truncate">
+                      {user.username}
+                    </h3>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center text-gray-500 text-sm">
-                  <span className="truncate pr-2">{contact.lastMessage}</span>
-                  {contact.unread > 0 && (
-                    <span className="bg-red-500 text-white rounded-full min-w-[20px] h-5 flex items-center justify-center text-xs flex-shrink-0">
-                      {contact.unread}
-                    </span>
-                  )}
+              ))
+            : contactsData.map((contact) => (
+                <div
+                  key={contact._id}
+                  className={`flex items-center p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 ${
+                    selectedContact._id === contact._id
+                      ? "bg-blue-50 border-l-4 border-l-blue-500"
+                      : ""
+                  }`}
+                  onClick={() => setSelectedContact(contact)}
+                >
+                  <img
+                    src={contact.profilePicture}
+                    alt=""
+                    className="w-10 h-10 rounded-full mr-3 flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-semibold text-gray-900 truncate">
+                        {contact.username}
+                      </h3>
+                      <span className="text-xs text-gray-400 flex-shrink-0">
+                        {contact.time}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-gray-500 text-sm">
+                      <span className="truncate pr-2">
+                        {contact.lastMessage}
+                      </span>
+                      {contact.unread > 0 && (
+                        <span className="bg-red-500 text-white rounded-full min-w-[20px] h-5 flex items-center justify-center text-xs flex-shrink-0">
+                          {contact.unread}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              ))}
         </div>
       </div>
 
       {/* Chat Window */}
       <div className="flex-1 flex flex-col">
-        {/* Chat Header (fixed) */}
+        {/* Chat Header */}
         <div className="p-4 bg-gray-300 border-b shadow-sm h-[5rem]">
           <div className="flex items-center">
             <img
-              src={selectedContact.avatar}
+              src={selectedContact?.profilePicture}
               alt=""
               className="w-8 h-8 rounded-full mr-3"
             />
-            <h2 className="font-semibold text-gray-900">
-              {selectedContact.name}
-            </h2>
+            <div className="flex flex-col">
+              <h2 className="font-semibold text-gray-900">
+                {selectedContact?.username}
+              </h2>
+              {/* {isUpserting || isLoadingHistory ? (
+                <span className="text-xs text-gray-600">Loading chat…</span>
+              ) : null}
+              {upsertError?.message || historyError?.message ? (
+                <span className="text-xs text-red-600">
+                  {upsertError?.message || historyError?.message}
+                </span>
+              ) : null} */}
+            </div>
           </div>
         </div>
 
-        {/* Messages (scrollable) */}
-        <div className="flex-1  p-4 overflow-y-auto bg-gray-100 scrollbar-hide">
+        {/* Messages */}
+        <div className="flex-1 p-4 overflow-y-auto bg-gray-100 scrollbar-hide">
           <div className="space-y-4">
-            {messagesData.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex items-end gap-2 ${
-                  msg.sender === "me" ? "justify-end" : "justify-start"
-                }`}
-              >
-                {/* Avatar for other person (left side) */}
-                {msg.sender === "other" && (
-                  <img
-                    src={selectedContact.avatar}
-                    alt=""
-                    className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
-                  />
-                )}
-
-                {/* Message bubble */}
+            {messages.map((msg) => {
+              const isMe =
+                String(msg.senderId || msg.sender) === String(currentUserId);
+              return (
                 <div
-                  className={`p-3 rounded-2xl max-w-[75%] break-words ${
-                    msg.sender === "me"
-                      ? "bg-blue-500 text-white rounded-br-md"
-                      : "bg-white text-gray-900 rounded-bl-md shadow-sm"
+                  key={msg._id || msg.createdAt}
+                  className={`flex items-end gap-2 ${
+                    isMe ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <p className="text-sm">{msg.text}</p>
-                  {msg.time && (
+                  {!isMe && (
+                    <img
+                      src={selectedContact.profilePicture}
+                      alt=""
+                      className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
+                    />
+                  )}
+                  <div
+                    className={`p-3 rounded-2xl max-w-[75%] break-words ${
+                      isMe
+                        ? "bg-blue-500 text-white rounded-br-md"
+                        : "bg-white text-gray-900 rounded-bl-md shadow-sm"
+                    }`}
+                  >
+                    <p className="text-sm">{msg.text}</p>
                     <span
                       className={`text-xs block mt-1 ${
-                        msg.sender === "me" ? "text-blue-100" : "text-gray-400"
+                        isMe ? "text-blue-100" : "text-gray-400"
                       }`}
                     >
-                      {msg.time}
+                      {new Date(msg.createdAt || Date.now()).toLocaleTimeString(
+                        [],
+                        { hour: "2-digit", minute: "2-digit" }
+                      )}
                     </span>
+                  </div>
+                  {isMe && (
+                    <img
+                      src={userState?.profilePicture}
+                      alt={useState?.username}
+                      className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
+                    />
                   )}
                 </div>
-                {msg.sender === "me" && (
-                  <img
-                    src="https://i.pravatar.cc/150?img=99" // Your avatar
-                    alt=""
-                    className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
-                  />
-                )}
-              </div>
-            ))}
+              );
+            })}
+            <div ref={messagesEndRef} />
           </div>
         </div>
 
-        {/* Input (fixed at bottom) */}
+        {/* Input */}
         <div className="border-t shadow-sm p-4 bg-gray-200">
           <div className="flex items-center gap-2">
             <input
               type="text"
               placeholder="Type a message..."
+              value={input}
+              onChange={(e) => handleTyping(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) send();
+              }}
               className="flex-1 p-3 rounded-full focus:outline-none focus:border-blue-500 bg-white"
             />
-            <button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-colors">
+            <button
+              onClick={send}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-colors"
+            >
               Send
             </button>
           </div>

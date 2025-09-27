@@ -73,6 +73,8 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  
+
   useEffect(() => {
     if (serverResponse) {
       switch (serverResponse.data.action) {
