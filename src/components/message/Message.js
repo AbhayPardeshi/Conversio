@@ -7,7 +7,7 @@ import { useUser } from "../../contexts/user/UserProvider";
 import { socket } from "../../utils/socket";
 
 const Message = () => {
-  const [selectedContact, setSelectedContact] = useState(null);
+  const [selectedContact, setSelectedContact] = useState([]);
   const [contactsData, setContactsData] = useState([]);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]); // [{_id, conversation, sender, text, createdAt}]
@@ -22,6 +22,7 @@ const Message = () => {
 
   useEffect(() => {
     if (!selectedContact?._id) return;
+    console.log("this ran joindm");
 
     socket.emit("joinDm", {
       selfUserId: currentUserId,
@@ -31,22 +32,39 @@ const Message = () => {
 
   useEffect(() => {
     const handler = (msg) => {
+      // fix needed : send correct roomId for that conversation
       if (
-        msg.roomId ===
-        `dm:${[currentUserId, selectedContact?._id].sort().join(":")}`
+        // msg.roomId ===
+        // `dm:${[currentUserId, selectedContact?._id].sort().join(":")}`
+        msg.roomId === conversation._id
       ) {
         setMessages((prev) => [...prev, msg]);
         scrollToBottom();
       }
     };
+
+    const fetchUsers = async () => {
+      console.log(currentUserId);
+      const usersMessaged = await axios.get(
+        `http://localhost:3001/api/chat/conversation?userId=${currentUserId}`
+      );
+
+      console.log(usersMessaged.data.users[0]);
+      setContactsData(usersMessaged.data.users);
+      console.log(contactsData);
+    };
+
+    fetchUsers();
+
+    console.log("this ran handler to set messages 2");
     socket.on("newMessage", handler);
     return () => socket.off("newMessage", handler);
-  }, [selectedContact?._id, currentUserId]);
+  }, [socket, selectedContact?._id, currentUserId]);
 
   useEffect(() => {
     const fetchConversation = async () => {
       if (!selectedContact?._id) return;
-
+      console.log("this ran insert convo and fetch messages");
       try {
         // 1) Upsert DM conversation
         const res = await axios.post("http://localhost:3001/api/chat/dm", {
@@ -94,7 +112,7 @@ const Message = () => {
     const text = input.trim();
     if (!text || !selectedContact || !conversation?._id) return;
 
-    socket.emit("sendDm", {
+    socket.emit("sendMessage", {
       roomId: conversation._id,
       message: { text, senderId: currentUserId },
     });
@@ -171,31 +189,31 @@ const Message = () => {
               ))
             : contactsData.map((contact) => (
                 <div
-                  key={contact._id}
+                  key={contact?._id}
                   className={`flex items-center p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 ${
-                    selectedContact._id === contact._id
+                    selectedContact._id === contact?._id
                       ? "bg-blue-50 border-l-4 border-l-blue-500"
                       : ""
                   }`}
                   onClick={() => setSelectedContact(contact)}
                 >
                   <img
-                    src={contact.profilePicture}
+                    src={contact?.profilePicture}
                     alt=""
                     className="w-10 h-10 rounded-full mr-3 flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center">
                       <h3 className="font-semibold text-gray-900 truncate">
-                        {contact.username}
+                        {contact?.username}
                       </h3>
                       <span className="text-xs text-gray-400 flex-shrink-0">
-                        {contact.time}
+                        {contact?.time}
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-gray-500 text-sm">
                       <span className="truncate pr-2">
-                        {contact.lastMessage}
+                        {conversation?.lastMessage}
                       </span>
                       {contact.unread > 0 && (
                         <span className="bg-red-500 text-white rounded-full min-w-[20px] h-5 flex items-center justify-center text-xs flex-shrink-0">
@@ -210,20 +228,25 @@ const Message = () => {
       </div>
 
       {/* Chat Window */}
-      <div className="flex-1 flex flex-col">
-        {/* Chat Header */}
-        <div className="p-4 bg-gray-300 border-b shadow-sm h-[5rem]">
-          <div className="flex items-center">
-            <img
-              src={selectedContact?.profilePicture}
-              alt=""
-              className="w-8 h-8 rounded-full mr-3"
-            />
-            <div className="flex flex-col">
-              <h2 className="font-semibold text-gray-900">
-                {selectedContact?.username}
-              </h2>
-              {/* {isUpserting || isLoadingHistory ? (
+      {selectedContact.length === 0 ? (
+        <div className="flex-1 flex flex-col">
+          <p>All your messages at one place</p>
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col">
+          {/* Chat Header */}
+          <div className="p-4 bg-gray-300 border-b shadow-sm h-[5rem]">
+            <div className="flex items-center">
+              <img
+                src={selectedContact?.profilePicture}
+                alt=""
+                className="w-8 h-8 rounded-full mr-3"
+              />
+              <div className="flex flex-col">
+                <h2 className="font-semibold text-gray-900">
+                  {selectedContact?.username}
+                </h2>
+                {/* {isUpserting || isLoadingHistory ? (
                 <span className="text-xs text-gray-600">Loading chat…</span>
               ) : null}
               {upsertError?.message || historyError?.message ? (
@@ -231,85 +254,88 @@ const Message = () => {
                   {upsertError?.message || historyError?.message}
                 </span>
               ) : null} */}
+              </div>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 p-4 overflow-y-auto bg-gray-100 scrollbar-hide">
+            <div className="space-y-4">
+              {messages.map((msg, index) => {
+                const isMe =
+                  String(msg.senderId || msg.sender) === String(currentUserId);
+                return (
+                  <div
+                    key={index}
+                    className={`flex items-end gap-2 ${
+                      isMe ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    {!isMe && (
+                      <img
+                        src={selectedContact.profilePicture}
+                        alt=""
+                        className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
+                      />
+                    )}
+                    <div
+                      className={`p-3 rounded-2xl max-w-[75%] break-words ${
+                        isMe
+                          ? "bg-blue-500 text-white rounded-br-md"
+                          : "bg-white text-gray-900 rounded-bl-md shadow-sm"
+                      }`}
+                    >
+                      <p className="text-sm">{msg.text}</p>
+                      <span
+                        className={`text-xs block mt-1 ${
+                          isMe ? "text-blue-100" : "text-gray-400"
+                        }`}
+                      >
+                        {new Date(
+                          msg.createdAt || Date.now()
+                        ).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                    {isMe && (
+                      <img
+                        src={userState?.profilePicture}
+                        alt={useState?.username}
+                        className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
+                      />
+                    )}
+                  </div>
+                );
+              })}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          {/* Input */}
+          <div className="border-t shadow-sm p-4 bg-gray-200">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Type a message..."
+                value={input}
+                onChange={(e) => handleTyping(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) send();
+                }}
+                className="flex-1 p-3 rounded-full focus:outline-none focus:border-blue-500 bg-white"
+              />
+              <button
+                onClick={send}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-colors"
+              >
+                Send
+              </button>
             </div>
           </div>
         </div>
-
-        {/* Messages */}
-        <div className="flex-1 p-4 overflow-y-auto bg-gray-100 scrollbar-hide">
-          <div className="space-y-4">
-            {messages.map((msg) => {
-              const isMe =
-                String(msg.senderId || msg.sender) === String(currentUserId);
-              return (
-                <div
-                  key={msg._id || msg.createdAt}
-                  className={`flex items-end gap-2 ${
-                    isMe ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  {!isMe && (
-                    <img
-                      src={selectedContact.profilePicture}
-                      alt=""
-                      className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
-                    />
-                  )}
-                  <div
-                    className={`p-3 rounded-2xl max-w-[75%] break-words ${
-                      isMe
-                        ? "bg-blue-500 text-white rounded-br-md"
-                        : "bg-white text-gray-900 rounded-bl-md shadow-sm"
-                    }`}
-                  >
-                    <p className="text-sm">{msg.text}</p>
-                    <span
-                      className={`text-xs block mt-1 ${
-                        isMe ? "text-blue-100" : "text-gray-400"
-                      }`}
-                    >
-                      {new Date(msg.createdAt || Date.now()).toLocaleTimeString(
-                        [],
-                        { hour: "2-digit", minute: "2-digit" }
-                      )}
-                    </span>
-                  </div>
-                  {isMe && (
-                    <img
-                      src={userState?.profilePicture}
-                      alt={useState?.username}
-                      className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
-                    />
-                  )}
-                </div>
-              );
-            })}
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
-
-        {/* Input */}
-        <div className="border-t shadow-sm p-4 bg-gray-200">
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="Type a message..."
-              value={input}
-              onChange={(e) => handleTyping(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) send();
-              }}
-              className="flex-1 p-3 rounded-full focus:outline-none focus:border-blue-500 bg-white"
-            />
-            <button
-              onClick={send}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-colors"
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
