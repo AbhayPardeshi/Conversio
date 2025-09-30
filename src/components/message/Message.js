@@ -5,6 +5,7 @@ import "./message.css";
 import axios from "axios";
 import { useUser } from "../../contexts/user/UserProvider";
 import { socket } from "../../utils/socket";
+import { ro } from "date-fns/locale";
 
 const Message = () => {
   const [selectedContact, setSelectedContact] = useState([]);
@@ -20,6 +21,8 @@ const Message = () => {
   const { userState } = useUser();
   const currentUserId = userState?._id;
 
+  console.log("selectedContact", selectedContact);
+  const roomId = `dm:${[currentUserId, selectedContact._id].sort().join(":")}`;
   useEffect(() => {
     if (!selectedContact?._id) return;
     console.log("this ran joindm");
@@ -33,30 +36,22 @@ const Message = () => {
   useEffect(() => {
     const handler = (msg) => {
       // fix needed : send correct roomId for that conversation
-      if (
-        // msg.roomId ===
-        // `dm:${[currentUserId, selectedContact?._id].sort().join(":")}`
-        msg.roomId === conversation._id
-      ) {
+      if (msg.roomId === roomId) {
         setMessages((prev) => [...prev, msg]);
         scrollToBottom();
       }
     };
 
     const fetchUsers = async () => {
-      console.log(currentUserId);
       const usersMessaged = await axios.get(
         `http://localhost:3001/api/chat/conversation?userId=${currentUserId}`
       );
 
-      console.log(usersMessaged.data.users[0]);
       setContactsData(usersMessaged.data.users);
-      console.log(contactsData);
     };
 
     fetchUsers();
 
-    console.log("this ran handler to set messages 2");
     socket.on("newMessage", handler);
     return () => socket.off("newMessage", handler);
   }, [socket, selectedContact?._id, currentUserId]);
@@ -101,7 +96,7 @@ const Message = () => {
     setInput(val);
     if (!conversation?._id) return;
     socket.emit("typing", {
-      roomId: conversation._id,
+      roomId: roomId,
       userId: currentUserId,
       isTyping: val.length > 0,
     });
@@ -110,13 +105,21 @@ const Message = () => {
   // Send message via sockets
   const send = () => {
     const text = input.trim();
-    if (!text || !selectedContact || !conversation?._id) return;
+    if (!text || !selectedContact) return;
 
-    socket.emit("sendMessage", {
-      roomId: conversation._id,
-      message: { text, senderId: currentUserId },
+    // 1️⃣ Compute the dynamic DM room ID
+    const roomId = `dm:${[currentUserId, selectedContact._id]
+      .sort()
+      .join(":")}`;
+
+    // 2️⃣ Emit to server
+    socket.emit("sendDm", {
+      selfUserId: currentUserId,
+      otherUserId: selectedContact._id,
+      message: { text },
     });
 
+    // 3️⃣ Clear input
     setInput("");
   };
 
@@ -213,7 +216,7 @@ const Message = () => {
                     </div>
                     <div className="flex justify-between items-center text-gray-500 text-sm">
                       <span className="truncate pr-2">
-                        {conversation?.lastMessage}
+                        {contact?.lastMessage}
                       </span>
                       {contact.unread > 0 && (
                         <span className="bg-red-500 text-white rounded-full min-w-[20px] h-5 flex items-center justify-center text-xs flex-shrink-0">
