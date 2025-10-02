@@ -71,7 +71,7 @@ export const PostProvider = ({ children }) => {
             );
 
             break;
-            console.error("Unknown action:", action);
+            
         }
       };
 
@@ -114,6 +114,15 @@ export const PostProvider = ({ children }) => {
   //   });
   // };
 
+  // const addComment = (commentData) => {
+  //    console.log(commentData);
+
+  //    postDispatch({
+  //      type: "ADD_COMMENT",
+  //      payload: commentData,
+  //    });
+  // }
+
   return (
     <PostContext.Provider
       value={{
@@ -126,6 +135,7 @@ export const PostProvider = ({ children }) => {
         likePost,
         loadMorePosts,
         hasMore,
+
       }}
     >
       {children}

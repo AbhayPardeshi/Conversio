@@ -2,7 +2,7 @@ const GET_POSTS = "GET_POSTS";
 const ADD_POST = "ADD_POST";
 const DELETE_ONE_POST = "DELETE_ONE_POST";
 const LIKE_POST = "LIKE_POST";
-const BOOKMARK_POST = "BOOKMARK_POST";
+const ADD_COMMENT = "ADD_COMMENT";
 
 const postReducer = (state, action) => {
   const { type, payload } = action;
@@ -37,6 +37,17 @@ const postReducer = (state, action) => {
         method: "POST",
         postMethodData: payload,
       };
+
+    // case ADD_COMMENT:
+    //   console.log(payload);
+
+    //   return {
+    //     ...state,
+    //     apiURL: `/api/posts/${payload.get("postId")}/comments`,
+    //     method: "POST",
+    //     postMethodData: payload,
+    //     isFile: true,
+    //   };
 
     // case BOOKMARK_POST:
     //   return {

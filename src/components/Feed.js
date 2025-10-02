@@ -17,7 +17,6 @@ import creationTime from "../utils/creationTime";
 import Posts from "./Post";
 import { useAuth } from "../contexts/auth/AuthProvider";
 
-
 const Feed = () => {
   const fileInputRef = useRef(null);
   const [postText, setPostText] = useState("");
@@ -35,6 +34,7 @@ const Feed = () => {
     formData.append("userId", user.id);
     formData.append("text", postText);
     formData.append("file", file);
+    formData.append("parentPostId", "");
 
     try {
       await addPost(formData);

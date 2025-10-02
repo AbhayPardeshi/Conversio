@@ -8,16 +8,17 @@ import Discover from "./components/Discover";
 import Notifications from "./components/Notifications";
 import Message from "./components/message/Message";
 import Bookmark from "./components/Bookmark";
+import SinglePost from "./components/singlePost";
 import { protectedRoutes as ProtectedRoute } from "./utils/protectedRoutes";
 import { useAuth } from "./contexts/auth/AuthProvider";
 
 function App() {
-  const { userAuthState, isLoading } = useAuth(); 
+  const { userAuthState, isLoading } = useAuth();
   const { isUserLoggedIn } = userAuthState;
   if (isLoading) {
     return (
       <div className="h-screen w-full flex justify-center items-center">
-        <div className="loader"></div>
+        <div className="loader">Loading....</div>
       </div>
     );
   }
@@ -28,10 +29,10 @@ function App() {
         path="/"
         element={
           isUserLoggedIn ? (
-          <Navigate to="/feed" replace />
-        ) : (
-          <Navigate to="/login" replace />
-        )
+            <Navigate to="/feed" replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
         }
       />
       <Route path="signin" element={<SignInPage />} />
@@ -84,6 +85,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="post/:postId"
+          element={
+            <ProtectedRoute user={isUserLoggedIn}>
+              <SinglePost />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="bookmark"
           element={

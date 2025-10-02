@@ -21,7 +21,6 @@ const Message = () => {
   const { userState } = useUser();
   const currentUserId = userState?._id;
 
-  console.log("selectedContact", selectedContact);
   const roomId = `dm:${[currentUserId, selectedContact._id].sort().join(":")}`;
   useEffect(() => {
     if (!selectedContact?._id) return;

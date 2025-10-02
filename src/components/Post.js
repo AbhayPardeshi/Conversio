@@ -10,13 +10,14 @@ import { usePost } from "../contexts/posts/PostProvider";
 import { useAuth } from "../contexts/auth/AuthProvider";
 import creationTime from "../utils/creationTime";
 import { useUser } from "../contexts/user/UserProvider";
+import { useNavigate } from "react-router-dom";
 
 const Posts = () => {
   const { posts, deletePost, likePost, loadMorePosts, hasMore } = usePost();
   const { userAuthState, isLoading } = useAuth();
-  const { userState,bookmarkPost } = useUser();
+  const { userState, bookmarkPost } = useUser();
   const [isDropdownVisible, setIsDropdownVisible] = useState(null);
-
+  const navigate = useNavigate();
   let userId = null;
   if (!isLoading) {
     userId = userAuthState?.user?.id;
@@ -44,9 +45,10 @@ const Posts = () => {
 
   return (
     <div className="bg-gray-100 rounded-md">
-      <section className="w-full">
+      <section className="w-full cursor-pointer">
         {posts.map((post, index) => (
           <div
+            onClick={() => navigate(`/post/${post._id}`)}
             ref={index === posts.length - 1 ? lastPostRef : null}
             className="bg-white rounded-md p-5 mt-4"
             key={index}
@@ -117,7 +119,10 @@ const Posts = () => {
             {/* Post Actions */}
             <div className="flex mt-5 justify-between px-4 text-gray-600 mx-12">
               <button
-                onClick={() => likePost(post._id, userId)}
+                onClick={(e) => {
+                  e.stopPropagation(); // prevent navigation
+                  likePost(post._id, userId);
+                }}
                 className={`flex items-center gap-2 p-2 rounded-full transition-colors ${
                   post.likes.includes(userId)
                     ? "text-red-500 bg-red-50 hover:bg-red-100"
@@ -142,7 +147,10 @@ const Posts = () => {
                     ? "text-gray-500 bg-gray-50 hover:bg-gray-100"
                     : "hover:bg-gray-100"
                 }`}
-                onClick={() => bookmarkPost(post._id, userId)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  bookmarkPost(post._id, userId);
+                }}
               >
                 {userState.bookmarkedPosts.includes(post._id) ? (
                   <Bookmark size={25} fill="currentColor" /> // filled
