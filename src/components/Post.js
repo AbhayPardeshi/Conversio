@@ -82,7 +82,10 @@ const Posts = () => {
                 {/* Dropdown */}
                 <div className="relative inline-block">
                   <button
-                    onClick={() => toggleDropdown(post._id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleDropdown(post._id);
+                    }}
                     className="text-black py-2 px-4 rounded hover:bg-gray-100"
                   >
                     <MoreHorizontal size={20} />
@@ -91,7 +94,11 @@ const Posts = () => {
                     <div className="absolute bg-white font-semibold border rounded shadow-md right-3 top-[25px] min-w-[80px] z-10">
                       <p
                         className="p-2 hover:bg-gray-100 cursor-pointer text-xs"
-                        onClick={() => deletePost(post._id)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // prevent navigation
+
+                          deletePost(post._id);
+                        }}
                       >
                         Delete Post
                       </p>

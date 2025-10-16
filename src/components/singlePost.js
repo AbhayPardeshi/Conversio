@@ -166,17 +166,22 @@ const SinglePost = () => {
             <p className="text-center text-gray-500 mt-4">No comments yet</p>
           )}
 
-          {comments.map((comment, index) => (
-            <CommentCard
-              index={index}
-              comment={comment}
-              userId={userAuthState?.user?.id}
-              likeComment={likePost}
-              creationTime={creationTime}
-              bookmarkedPost={userState.bookmarkedPosts}
-              bookmarkPost={bookmarkPost}
-            />
-          ))}
+          <div className="mt-2">
+            <p className="text-gray-600 font-semibold mb-2 ml-2">
+              Comments ({comments.length})
+            </p>
+            {comments.map((comment, index) => (
+              <CommentCard
+                index={index}
+                comment={comment}
+                userId={userAuthState?.user?.id}
+                likeComment={likePost}
+                creationTime={creationTime}
+                bookmarkedPost={userState.bookmarkedPosts}
+                bookmarkPost={bookmarkPost}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -184,7 +189,3 @@ const SinglePost = () => {
 };
 
 export default SinglePost;
-
-
-
-
