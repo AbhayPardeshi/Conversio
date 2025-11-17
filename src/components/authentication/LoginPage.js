@@ -1,94 +1,148 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/auth/AuthProvider";
-const LoginPage = () => {
-  
+
+// BrightNest-styled LoginPage
+// Drop this file into your routes (React Router) and ensure TailwindCSS is configured.
+
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const { loginHandler } = useAuth();
 
-  const handleEmailChange = (event) => {
-    setEmail(event.target.value);
-  };
+  const handleEmailChange = (e) => setEmail(e.target.value);
+  const handlePasswordChange = (e) => setPassword(e.target.value);
 
-  const handlePasswordChange = (event) => {
-    setPassword(event.target.value);
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    const data = {
-      email,
-      password,
-    };
-    loginHandler(data);
-    setEmail("");
-    setPassword("");
+    try {
+      await loginHandler({ email, password });
+      // loginHandler should handle routing on success; otherwise you can navigate here
+    } catch (err) {
+      console.error(err);
+      setMessage(err?.message || "Login failed. Please check credentials.");
+    } finally {
+      setEmail("");
+      setPassword("");
+    }
   };
 
   return (
-    <div className="h-screen flex ">
-      <div className="flex-1 overflow-hidden">
-        <img
-          src="https://cdn.dribbble.com/users/2329333/screenshots/9291756/media/8323473b3e37df82514c281a506ecf31.png?resize=450x338&vertical=center"
-          alt="logo"
-          className="w-full h-full object-cover"
-        />
-      </div>
-      <div className="flex-1 p-[20px] bg-[#f4f4f4] flex flex-col justify-center items-center box-border">
-        <div className="w-[350px] h-[350px] bg-white p-2 items-center flex flex-col gap-4">
-          <div className="flex items-center flex-col">
-            <p className="font-bold text-gray-900 text-[1.5rem]">Login</p>
-            <div className="w-[5rem] border-blue-500 border-b-2 mt-1 rounded-xl"></div>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden flex">
+        {/* Left gradient panel (hidden on small screens) */}
+        <div
+          className="hidden md:flex md:flex-1 items-end p-8"
+          style={{
+            background: `radial-gradient(circle at 60% 55%, rgba(255,150,90,0.95) 0%, rgba(255,130,70,0.6) 25%, rgba(255,180,150,0.35) 55%, rgba(245,210,200,0.25) 75%, rgba(240,225,220,0.25) 100%)`,
+          }}
+        >
+          <div className="w-full h-full flex flex-col justify-between">
+            <div className="pt-2">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-black/80" />
+                <span className="font-semibold text-black/80">BrightNest</span>
+              </div>
+            </div>
+
+            <div className="pb-6">
+              <p className="text-sm text-black/70 mb-2">You can easily</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-black leading-tight">
+                Get access your personal hub for clarity and productivity.
+              </h2>
+            </div>
           </div>
-          <form onSubmit={handleSubmit} className="flex flex-col w-[250px]">
-           
-            <label htmlFor="email">Email:</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={email}
-              onChange={handleEmailChange}
-              className="border-bottom-2 border-gray-400 p-2 border-b-2 outline-none text-sm"
-              required
-            />
-            <br />
-            <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={password}
-              onChange={handlePasswordChange}
-              className="border-bottom- border-gray-400 p-2 border-b-2 outline-none text-sm"
-              required
-            />
-            <br />
-            <button
-              type="submit"
-              className="bg-blue-600 text-white rounded-2xl px-1 py-1 text-[0.85rem] uppercase w-[100px] mx-auto"
+        </div>
+
+        {/* Right auth panel */}
+        <div className="flex-1 p-10 flex items-center justify-center">
+          <div className="w-full max-w-md">
+            <div className="mb-6">
+              <div className="text-orange-400 text-2xl">*</div>
+              <h1 className="text-3xl font-bold mt-2">Welcome back</h1>
+              <p className="text-sm text-gray-400 mt-2">Log in to continue</p>
+            </div>
+
+            <form
+              onSubmit={handleSubmit}
+              className="bg-white p-6 rounded-xl shadow-sm space-y-4"
             >
-              Login
-            </button>
-          </form>
-          <p>{message}</p>
-          <p>
-            Haven't registered yet?{" "}
-            <Link
-              to="/signin"
-              className="text-cyan-800 hover:text-blue-600 hover:underline"
-            >
-              Signup
-            </Link>
-          </p>
+              <label className="block text-sm">
+                <div className="text-sm text-gray-600 mb-2">Your email</div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  placeholder="you@company.com"
+                  required
+                  className="w-full border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-200"
+                />
+              </label>
+
+              <label className="block text-sm">
+                <div className="text-sm text-gray-600 mb-2">Password</div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  placeholder="••••••••"
+                  required
+                  className="w-full border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-200"
+                />
+              </label>
+
+              <div className="flex items-center justify-between text-sm">
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" className="w-4 h-4" />
+                  <span>Remember me</span>
+                </label>
+                <Link to="/forgot" className="text-orange-400">
+                  Forgot?
+                </Link>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-black text-white py-3 rounded-md mt-2 shadow-[0_18px_30px_rgba(0,0,0,0.12)]"
+              >
+                Log in
+              </button>
+
+              <div className="flex items-center text-gray-300 my-4">
+                <div className="flex-1 h-px bg-gray-200" />
+                <div className="px-3 text-sm">or continue with</div>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+
+              <div className="flex gap-3">
+                <button type="button" className="flex-1 border rounded-md py-2">
+                  G
+                </button>
+                <button type="button" className="flex-1 border rounded-md py-2">
+                  Git
+                </button>
+                <button type="button" className="flex-1 border rounded-md py-2">
+                  
+                </button>
+              </div>
+
+              {message && (
+                <p className="text-sm text-red-500 mt-2">{message}</p>
+              )}
+
+              <p className="text-center text-sm text-gray-400 mt-4">
+                Don’t have an account?{" "}
+                <Link to="/signin" className="text-orange-400">
+                  Create one
+                </Link>
+              </p>
+            </form>
+          </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default LoginPage;
+}

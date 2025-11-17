@@ -9,6 +9,7 @@ import Notifications from "./components/Notifications";
 import Message from "./components/message/Message";
 import Bookmark from "./components/Bookmark";
 import SinglePost from "./components/singlePost";
+import LandingPage from "./pages/LandingPage";  
 import { protectedRoutes as ProtectedRoute } from "./utils/protectedRoutes";
 import { useAuth } from "./contexts/auth/AuthProvider";
 
@@ -31,12 +32,13 @@ function App() {
           isUserLoggedIn ? (
             <Navigate to="/feed" replace />
           ) : (
-            <Navigate to="/login" replace />
+            <Navigate to="/landing" replace />
           )
         }
       />
       <Route path="signin" element={<SignInPage />} />
       <Route path="login" element={<LoginPage />} />
+      <Route path="landing" element={<LandingPage />} />  
 
       <Route
         path="profile"

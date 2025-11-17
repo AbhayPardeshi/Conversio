@@ -140,16 +140,16 @@ const AuthProvider = ({ children }) => {
   }, [serverResponse]);
 
   useEffect(() => {
-    let setTimeOutId;
-    setTimeOutId = setTimeout(() => {
+    let timeoutId = setTimeout(() => {
       console.log("hi");
 
       const encodedTokenTemp = localStorage.getItem("token");
+      console.log(encodedTokenTemp);
+
       if (encodedTokenTemp) {
-        const decodedToken = jwtDecode(
-          encodedTokenTemp,
-          process.env.REACT_APP_JWT_SECRET
-        );
+        // jwtDecode does not take secret on frontend
+        const decodedToken = jwtDecode(encodedTokenTemp);
+
         userAuthDispatch({
           type: "LOGIN",
           payload: {
@@ -158,19 +158,24 @@ const AuthProvider = ({ children }) => {
             user: { ...decodedToken },
           },
         });
+
         if (decodedToken?.id) {
-          console.log("Calling getUserData with ID:", decodedToken);
+          console.log("Calling getUserData with ID:", decodedToken.id);
           getUserData(decodedToken.id);
         } else {
-          console.error("No _id found in decoded token:", decodedToken);
+          console.error("No id found in decoded token:", decodedToken);
         }
 
-        setIsLoading(false);
         navigate("/");
       }
-    });
-    return () => clearTimeout(setTimeOutId);
+
+      // always stop loading
+      setIsLoading(false);
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, []);
+
 
   return (
     <AuthContext.Provider
