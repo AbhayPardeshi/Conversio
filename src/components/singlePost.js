@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Heart,
   MessageCircle,
@@ -15,34 +15,136 @@ import creationTime from "../utils/creationTime";
 import axios from "axios";
 import CommentBox from "./CommentBox";
 
+const CommentThread = ({
+  comment,
+  depth,
+  index,
+  userId,
+  likeComment,
+  creationTime,
+  bookmarkedPost,
+  bookmarkPost,
+  postId,
+  onReplySuccess,
+}) => {
+  const shouldCollapse = depth >= 2 && comment.replies?.length > 0;
+
+  const [showReplies, setShowReplies] = useState(false);
+  return (
+    <div className={`${depth > 0 ? "ml-6" : ""}`}>
+      <CommentCard
+        index={index}
+        comment={comment}
+        userId={userId}
+        likeComment={likeComment}
+        creationTime={creationTime}
+        bookmarkedPost={bookmarkedPost}
+        bookmarkPost={bookmarkPost}
+        postId={postId}
+        onReplySuccess={onReplySuccess}
+        repliesCount={comment.replies?.length || 0}
+        onToggleReplies={() => setShowReplies((prev) => !prev)}
+        showReplies={showReplies}
+      />
+      {comment.replies?.length > 0 && showReplies && !shouldCollapse && (
+        <div className="mt-2">
+          {comment.replies.map((reply, replyIndex) => (
+            <CommentThread
+              key={reply._id}
+              comment={reply}
+              depth={depth + 1}
+              index={replyIndex}
+              userId={userId}
+              likeComment={likeComment}
+              creationTime={creationTime}
+              bookmarkedPost={bookmarkedPost}
+              bookmarkPost={bookmarkPost}
+              postId={postId}
+              onReplySuccess={onReplySuccess}
+            />
+          ))}
+        </div>
+      )}
+      {comment.replies?.length > 0 && showReplies && shouldCollapse && (
+        <details className="ml-6 mt-2 text-sm text-gray-500" open>
+          <summary>Hide replies</summary>
+          <div className="mt-2">
+            {comment.replies.map((reply, replyIndex) => (
+              <CommentThread
+                key={reply._id}
+                comment={reply}
+                depth={depth + 1}
+                index={replyIndex}
+                userId={userId}
+                likeComment={likeComment}
+                creationTime={creationTime}
+                bookmarkedPost={bookmarkedPost}
+                bookmarkPost={bookmarkPost}
+                postId={postId}
+                onReplySuccess={onReplySuccess}
+              />
+            ))}
+          </div>
+        </details>
+      )}
+    </div>
+  );
+};
+
 const SinglePost = () => {
   const { postId } = useParams(); // postId from route
   const { likePost, deletePost, posts } = usePost();
   const { userAuthState } = useAuth();
   const { userState, bookmarkPost } = useUser();
-  const [comments, setComments] = useState([]);
+  const [allComments, setAllComments] = useState([]);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const navigate = useNavigate();
 
   const userId = userAuthState?.user?.id;
 
   const post = posts.find((p) => p._id === postId);
+  const fetchComments = async () => {
+    const res = await axios.get(
+      `http://localhost:3001/api/posts/${postId}/comments`
+    );
+    setAllComments(res.data.comments || []);
+  };
+
   // Fetch post comments
   useEffect(() => {
-    const fetchComments = async () => {
-      const res = await axios.get(
-        `http://localhost:3001/api/posts/${postId}/comments`
-      );
-      setComments(res.data.comments || []);
-    };
     fetchComments();
   }, [postId]);
+
+  const buildCommentTree = (comments, rootId) => {
+    const map = new Map();
+    comments.forEach((c) => {
+      map.set(c._id, { ...c, replies: [] });
+    });
+
+    const roots = [];
+    map.forEach((node) => {
+      if (String(node.parentPost) === String(rootId)) {
+        roots.push(node);
+      } else if (map.has(String(node.parentPost))) {
+        map.get(String(node.parentPost)).replies.push(node);
+      }
+    });
+
+    return roots;
+  };
+
+  const commentTree = useMemo(
+    () => buildCommentTree(allComments, postId),
+    [allComments, postId]
+  );
+  const topLevelCount = commentTree.length;
 
   // Toggle dropdown
   const toggleDropdown = () => setIsDropdownVisible(!isDropdownVisible);
 
   // Add comment
-  const handleAddComment = (data) => {
-    setComments([data, ...comments]); // prepend new comment
+  const handleAddComment = () => {
+    fetchComments();
   };
 
   if (!post) return <p className="text-center text-gray-500">Loading...</p>;
@@ -54,19 +156,39 @@ const SinglePost = () => {
         <div className="bg-white rounded-md p-5 mt-4">
           {/* Post Header */}
           <div className="flex items-center gap-3">
-            <img
-              className="w-[2.15rem] h-[2.1rem] rounded-full object-cover"
-              src={post.user?.profilePicture || "/default-avatar.png"}
-              alt="user"
-            />
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (post?.user?._id || post?.user?.id) {
+                  navigate(`/profile/${post.user._id || post.user.id}`);
+                }
+              }}
+              className="shrink-0"
+            >
+              <img
+                className="w-[2.15rem] h-[2.1rem] rounded-full object-cover"
+                src={post.user?.profilePicture || "/default-avatar.png"}
+                alt="user"
+              />
+            </button>
             <div className="flex justify-between w-full">
               <div className="flex gap-4">
-                <div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (post?.user?._id || post?.user?.id) {
+                      navigate(`/profile/${post.user._id || post.user.id}`);
+                    }
+                  }}
+                  className="text-left"
+                >
                   <span className="font-semibold">{post.user.username}</span>
                   <span className="text-sm text-gray-500 ml-2">
                     @{post.user?.username?.toLowerCase()}
                   </span>
-                </div>
+                </button>
                 <div>
                   <span className="text-xs text-gray-500">
                     {creationTime(post.createdAt)}
@@ -130,7 +252,7 @@ const SinglePost = () => {
 
             <button className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100">
               <MessageCircle size={25} />
-              <span className="text-sm">{comments.length}</span>
+              <span className="text-sm">{topLevelCount}</span>
             </button>
 
             <button
@@ -162,23 +284,27 @@ const SinglePost = () => {
         />
         {/* Comments List */}
         <div className="mt-2">
-          {comments.length === 0 && (
+          {topLevelCount === 0 && (
             <p className="text-center text-gray-500 mt-4">No comments yet</p>
           )}
 
           <div className="mt-2">
             <p className="text-gray-600 font-semibold mb-2 ml-2">
-              Comments ({comments.length})
+              Comments ({topLevelCount})
             </p>
-            {comments.map((comment, index) => (
-              <CommentCard
-                index={index}
+            {commentTree.map((comment, index) => (
+              <CommentThread
+                key={comment._id}
                 comment={comment}
+                depth={0}
+                index={index}
                 userId={userAuthState?.user?.id}
                 likeComment={likePost}
                 creationTime={creationTime}
                 bookmarkedPost={userState.bookmarkedPosts}
                 bookmarkPost={bookmarkPost}
+                postId={postId}
+                onReplySuccess={fetchComments}
               />
             ))}
           </div>

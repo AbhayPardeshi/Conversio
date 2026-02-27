@@ -2,6 +2,7 @@ import Layout from "./pages/Layout";
 import { Route, Routes, Navigate } from "react-router-dom";
 import Feed from "./components/Feed";
 import ProfilePage from "./components/Profile/ProfilePage";
+import UserProfilePage from "./components/Profile/UserProfilePage";
 import SignInPage from "./components/authentication/SignInPage";
 import LoginPage from "./components/authentication/LoginPage";
 import Discover from "./components/Discover";
@@ -50,7 +51,7 @@ function App() {
       />
 
       {/* Layout without Discover */}
-      <Route element={<Layout showDiscover={false} />}>
+      <Route element={<Layout />}>
         <Route
           path="message"
           element={
@@ -62,7 +63,7 @@ function App() {
       </Route>
 
       {/* Layout with Discover */}
-      <Route element={<Layout showDiscover={true} />}>
+      <Route element={<Layout />}>
         <Route
           path="discover"
           element={
@@ -93,6 +94,14 @@ function App() {
           element={
             <ProtectedRoute user={isUserLoggedIn}>
               <SinglePost />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="profile/:userId"
+          element={
+            <ProtectedRoute user={isUserLoggedIn}>
+              <UserProfilePage />
             </ProtectedRoute>
           }
         />

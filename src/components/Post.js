@@ -12,12 +12,25 @@ import creationTime from "../utils/creationTime";
 import { useUser } from "../contexts/user/UserProvider";
 import { useNavigate } from "react-router-dom";
 
-const Posts = () => {
+const Posts = ({
+  posts: postsProp,
+  enableInfiniteScroll = true,
+  showEndMessage = true,
+}) => {
   const { posts, deletePost, likePost, loadMorePosts, hasMore } = usePost();
   const { userAuthState, isLoading } = useAuth();
   const { userState, bookmarkPost } = useUser();
   const [isDropdownVisible, setIsDropdownVisible] = useState(null);
   const navigate = useNavigate();
+  const list = postsProp || posts;
+  const getCommentCount = (post) => {
+    if (typeof post?.commentsCount === "number") return post.commentsCount;
+    if (typeof post?.commentCount === "number") return post.commentCount;
+    if (typeof post?.comments === "number") return post.comments;
+    if (Array.isArray(post?.comments)) return post.comments.length;
+    if (Array.isArray(post?.comment)) return post.comment.length;
+    return 0;
+  };
   let userId = null;
   if (!isLoading) {
     userId = userAuthState?.user?.id;
@@ -32,6 +45,7 @@ const Posts = () => {
   const observer = useRef();
   const lastPostRef = useCallback(
     (node) => {
+      if (!enableInfiniteScroll) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
@@ -40,43 +54,67 @@ const Posts = () => {
       });
       if (node) observer.current.observe(node);
     },
-    [hasMore, loadMorePosts]
+    [enableInfiniteScroll, hasMore, loadMorePosts]
   );
 
   return (
     <div className="bg-gray-100 rounded-md">
       <section className="w-full cursor-pointer">
-        {posts.map((post, index) => (
+        {list.map((post, index) => (
           <div
             onClick={() => navigate(`/post/${post._id}`)}
-            ref={index === posts.length - 1 ? lastPostRef : null}
+            ref={
+              enableInfiniteScroll && index === list.length - 1
+                ? lastPostRef
+                : null
+            }
             className="bg-white rounded-md p-5 mt-4"
             key={index}
           >
             {/* Post Header */}
             <div className="flex items-center gap-3">
-              <img
-                className="w-[2.15rem] h-[2.1rem] rounded-full object-cover"
-                src={
-                  post.user?.profilePicture
-                    ? post.user.profilePicture
-                    : "/default-avatar.png"
-                }
-                alt="user"
-              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (post?.user?._id || post?.user?.id) {
+                    navigate(`/profile/${post.user._id || post.user.id}`);
+                  }
+                }}
+                className="shrink-0"
+              >
+                <img
+                  className="w-[2.15rem] h-[2.1rem] rounded-full object-cover"
+                  src={
+                    post.user?.profilePicture
+                      ? post.user.profilePicture
+                      : "/default-avatar.png"
+                  }
+                  alt="user"
+                />
+              </button>
               <div className="flex justify-between w-full">
-                <div className="flex gap-4">
-                  <div>
-                    <span className="font-semibold">{post.user.username}</span>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (post?.user?._id || post?.user?.id) {
+                        navigate(`/profile/${post.user._id || post.user.id}`);
+                      }
+                    }}
+                    className="text-left inline-flex items-center"
+                  >
+                    <span className="font-semibold">
+                      {post.user.username}
+                    </span>
                     <span className="text-sm text-gray-500 ml-2">
                       @{post.user?.username?.toLowerCase()}
                     </span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-gray-500">
-                      {creationTime(post.createdAt)}
-                    </span>
-                  </div>
+                  </button>
+                  <span className="text-xs text-gray-500">
+                    {creationTime(post.createdAt)}
+                  </span>
                 </div>
 
                 {/* Dropdown */}
@@ -145,7 +183,7 @@ const Posts = () => {
 
               <button className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100">
                 <MessageCircle size={25} />
-                <span className="text-sm">{post.comments || 0}</span>
+                <span className="text-sm">{getCommentCount(post)}</span>
               </button>
 
               <button
@@ -174,7 +212,7 @@ const Posts = () => {
           </div>
         ))}
       </section>
-      {!hasMore && (
+      {showEndMessage && !hasMore && (
         <p className="text-center text-gray-500 py-4">No more posts</p>
       )}
     </div>
