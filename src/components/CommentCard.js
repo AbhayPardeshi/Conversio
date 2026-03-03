@@ -5,6 +5,8 @@ import {
   Share2,
   MoreHorizontal,
 } from "lucide-react";
+import { useState } from "react";
+import axios from "axios";
 
 const CommentCard = ({
   index,
@@ -14,7 +16,35 @@ const CommentCard = ({
   likeComment,
   bookmarkedPost,
   bookmarkPost,
+  postId,
+  onReplySuccess,
+  repliesCount = 0,
+  onToggleReplies,
+  showReplies = false,
 }) => {
+  const [showReply, setShowReply] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleReply = async () => {
+    if (!replyText.trim() || !userId) return;
+    try {
+      setIsSubmitting(true);
+      await axios.post(`http://localhost:3001/api/posts/${postId}/comments`, {
+        userId,
+        text: replyText,
+        parentPostId: comment._id,
+      });
+      setReplyText("");
+      setShowReply(false);
+      onReplySuccess?.();
+    } catch (err) {
+      console.error("Failed to reply to comment", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-md p-5 mt-4" key={index}>
       <div className="flex items-center gap-3">
@@ -71,7 +101,7 @@ const CommentCard = ({
 
         <button className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100">
           <MessageCircle size={25} />
-          <span className="text-sm">{comment.comments || 0}</span>
+          <span className="text-sm">{repliesCount}</span>
         </button>
 
         <button
@@ -93,6 +123,40 @@ const CommentCard = ({
           <Share2 size={25} />
           <span className="text-sm">{comment.shares || 0}</span>
         </button>
+      </div>
+
+      <div className="mx-12 mt-2">
+        <button
+          onClick={() => setShowReply((prev) => !prev)}
+          className="text-sm text-gray-600 hover:text-gray-900"
+        >
+          Reply
+        </button>
+        {repliesCount > 0 && (
+          <button
+            onClick={onToggleReplies}
+            className="ml-4 text-sm text-gray-600 hover:text-gray-900"
+          >
+            {showReplies ? "Hide replies" : `View replies (${repliesCount})`}
+          </button>
+        )}
+        {showReply && (
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Write a reply..."
+              className="flex-1 border rounded-full px-3 py-2 text-sm focus:outline-none"
+            />
+            <button
+              onClick={handleReply}
+              disabled={isSubmitting}
+              className="px-3 py-2 rounded-full bg-blue-600 text-white text-sm"
+            >
+              Send
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

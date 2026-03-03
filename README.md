@@ -68,3 +68,96 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Project Changes Summary (Frontend)
+
+This section summarizes the UI/feature changes implemented during this collaboration and where they live in the codebase.
+
+### 1) Follow/Followers State + Discover Integration
+What changed:
+- Added a follow context and reducer to manage followers/following state.
+- Discover page now pulls followers/following and renders “Who to Follow” + “Friends”.
+- Clicking the message icon in Discover navigates to Message and opens the chat with that user.
+
+Files:
+- `src/contexts/follow/FollowProvider.js`
+- `src/contexts/follow/followReducer.js`
+- `src/components/Discover.js`
+- `src/index.js` (provider wiring)
+- `src/components/message/Message.js` (accepts preselected contact)
+
+Notes:
+- The follow provider is flexible for response shapes (e.g., `data.following`, `data.users`, `data.user.following`).
+
+### 2) Messaging UI Enhancements
+What changed:
+- Polished chat UI layout and spacing.
+- Auto-focus and scroll to bottom on contact selection.
+- De-dup contacts in the sidebar by user id.
+
+Files:
+- `src/components/message/Message.js`
+- `src/components/message/message.css` (scrollbar hiding)
+
+### 3) Infinite Scroll Dedupe for Feed
+What changed:
+- Prevented duplicate posts when loading more pages by deduping on `_id`.
+
+Files:
+- `src/contexts/posts/PostProvider.js`
+
+### 4) User Profile Page (View Other Users)
+What changed:
+- New `/profile/:userId` page showing user info, followers, following, and posts.
+- Layout inspired by the provided reference, with a tab row for Posts/Followers/Following.
+- Posts reuse the same card format as Feed.
+- Clickable avatar/username navigates to that user profile.
+
+Files:
+- `src/components/Profile/UserProfilePage.js`
+- `src/App.js`
+- `src/components/Post.js`
+- `src/components/singlePost.js`
+
+### 5) Layout & Scroll Behavior
+What changed:
+- Sidebar and Discover are fixed; only middle content scrolls.
+- Scrollbar hidden on the middle content panel.
+
+Files:
+- `src/pages/Layout.js`
+- `src/index.css`
+
+### 6) Post Card Layout Tweaks
+What changed:
+- Time is aligned inline with username/handle.
+- Comment count now uses `commentsCount` (from feed API) with fallbacks.
+
+Files:
+- `src/components/Post.js`
+
+### 7) Threaded Comments (Unlimited Depth)
+What changed:
+- Built nested comment tree and rendered replies recursively.
+- Replies are hidden until “View replies (n)” is clicked.
+- Top-level comment count doesn’t include replies.
+- Added reply input for commenting on comments.
+
+Files:
+- `src/components/singlePost.js`
+- `src/components/CommentCard.js`
+- `src/components/CommentBox.js`
+
+### 8) Navbar Title Cleanup
+What changed:
+- IDs in the URL no longer show in the header.
+- Single post route now shows “Post” in the header.
+
+Files:
+- `src/components/Navbar.js`
+
+## Backend Change (Required for Comment Counts)
+Your feed API was updated to return `commentsCount` for each post. The frontend reads this field.
+
+Expected field:
+- `commentsCount` on each post from `GET /api/posts`

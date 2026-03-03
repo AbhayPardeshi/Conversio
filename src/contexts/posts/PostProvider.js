@@ -45,13 +45,22 @@ export const PostProvider = ({ children }) => {
       const handleResponse = () => {
         const { action, posts, savedPost, pagination, message } =
           serverResponse.data;
-
+console.log(serverResponse.data);
         switch (action) {
           case "feedPosts":
             if (pagination.page === 1) {
               setPosts(posts);
             } else {
-              setPosts((prev) => [...prev, ...posts]);
+              setPosts((prev) => {
+                const merged = [...prev, ...posts];
+                const map = new Map();
+                merged.forEach((post) => {
+                  if (post?._id && !map.has(post._id)) {
+                    map.set(post._id, post);
+                  }
+                });
+                return Array.from(map.values());
+              });
             }
             setHasMore(pagination.hasMore);
             break;
@@ -135,7 +144,6 @@ export const PostProvider = ({ children }) => {
         likePost,
         loadMorePosts,
         hasMore,
-
       }}
     >
       {children}

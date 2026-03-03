@@ -6,9 +6,14 @@ import axios from "axios";
 import { useUser } from "../../contexts/user/UserProvider";
 import { socket } from "../../utils/socket";
 import { ro } from "date-fns/locale";
+import { useLocation } from "react-router-dom";
 
 const Message = () => {
-  const [selectedContact, setSelectedContact] = useState([]);
+  const location = useLocation();
+  const initialSelectedContact = location?.state?.selectedContact || [];
+  const [selectedContact, setSelectedContact] = useState(
+    initialSelectedContact
+  );
   const [contactsData, setContactsData] = useState([]);
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]); // [{_id, conversation, sender, text, createdAt}]
@@ -17,9 +22,12 @@ const Message = () => {
   const [searchUsers, setSearchUsers] = useState([]);
 
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
   const { userState } = useUser();
   const currentUserId = userState?._id;
+
+  const getId = (user) => user?._id || user?.id || "";
 
   const roomId = `dm:${[currentUserId, selectedContact._id].sort().join(":")}`;
   useEffect(() => {
@@ -46,7 +54,7 @@ const Message = () => {
         `http://localhost:3001/api/chat/conversation?userId=${currentUserId}`
       );
 
-      setContactsData(usersMessaged.data.users);
+      setContactsData(usersMessaged.data.users || []);
     };
 
     fetchUsers();
@@ -54,6 +62,15 @@ const Message = () => {
     socket.on("newMessage", handler);
     return () => socket.off("newMessage", handler);
   }, [socket, selectedContact?._id, currentUserId]);
+
+  const uniqueContacts = useMemo(() => {
+    const map = new Map();
+    contactsData.forEach((user) => {
+      const id = getId(user);
+      if (id && !map.has(id)) map.set(id, user);
+    });
+    return Array.from(map.values());
+  }, [contactsData]);
 
   useEffect(() => {
     const fetchConversation = async () => {
@@ -134,6 +151,13 @@ const Message = () => {
   }, [messages.length]);
 
   useEffect(() => {
+    if (selectedContact && getId(selectedContact)) {
+      inputRef.current?.focus();
+      scrollToBottom();
+    }
+  }, [selectedContact]);
+
+  useEffect(() => {
     const timeout = setTimeout(async () => {
       if (!query.trim()) {
         setSearchUsers([]);
@@ -155,20 +179,20 @@ const Message = () => {
   }, [query]);
 
   return (
-    <div className="flex bg-white h-[calc(100vh-70px)] shadow-lg rounded-lg overflow-hidden border-none">
+    <div className="flex bg-white h-[calc(100vh-70px)] shadow-xl rounded-2xl overflow-hidden border border-gray-100">
       {/* Sidebar */}
-      <div className="w-1/4 bg-white border-r flex flex-col">
-        <div className="p-4 border-b bg-white h-[5rem]">
+      <div className="w-1/4 bg-white border-r border-gray-100 flex flex-col">
+        <div className="p-4 border-b border-gray-100 bg-white h-[5rem]">
           <input
             type="text"
             placeholder="Search..."
-            className="w-full p-2 pl-6 border rounded focus:outline-none focus:border-blue-500 bg-gray-100 rounded-3xl"
+            className="w-full px-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:border-blue-500 bg-gray-50 text-sm"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto scrollbar-hide">
+        <div className="flex-1 overflow-y-auto scrollbar-hide bg-white">
           {/* If search query exists, show filtered search results */}
           {query.trim()
             ? searchUsers.map((user) => (
@@ -180,7 +204,7 @@ const Message = () => {
                   <img
                     src={user.profilePicture}
                     alt={user.username}
-                    className="w-10 h-10 rounded-full mr-3 flex-shrink-0"
+                    className="w-10 h-10 rounded-full mr-3 flex-shrink-0 ring-2 ring-white"
                   />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 truncate">
@@ -189,7 +213,7 @@ const Message = () => {
                   </div>
                 </div>
               ))
-            : contactsData.map((contact) => (
+            : uniqueContacts.map((contact) => (
                 <div
                   key={contact?._id}
                   className={`flex items-center p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 ${
@@ -202,7 +226,7 @@ const Message = () => {
                   <img
                     src={contact?.profilePicture}
                     alt=""
-                    className="w-10 h-10 rounded-full mr-3 flex-shrink-0"
+                    className="w-10 h-10 rounded-full mr-3 flex-shrink-0 ring-2 ring-white"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center">
@@ -231,23 +255,36 @@ const Message = () => {
 
       {/* Chat Window */}
       {selectedContact.length === 0 ? (
-        <div className="flex-1 flex flex-col">
-          <p>All your messages at one place</p>
+        <div className="flex-1 flex flex-col bg-gradient-to-b from-slate-50 to-white">
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 text-2xl">
+                ...
+              </div>
+              <p className="text-lg font-semibold text-gray-900">
+                All your messages in one place
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Select a conversation to start chatting
+              </p>
+            </div>
+          </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-gradient-to-b from-slate-50 to-white">
           {/* Chat Header */}
-          <div className="p-4 bg-gray-300 border-b shadow-sm h-[5rem]">
+          <div className="p-4 bg-white border-b border-gray-100 h-[5rem] flex items-center">
             <div className="flex items-center">
               <img
                 src={selectedContact?.profilePicture}
                 alt=""
-                className="w-8 h-8 rounded-full mr-3"
+                className="w-10 h-10 rounded-full mr-3 ring-2 ring-white"
               />
               <div className="flex flex-col">
                 <h2 className="font-semibold text-gray-900">
                   {selectedContact?.username}
                 </h2>
+                <span className="text-xs text-gray-500">Active now</span>
                 {/* {isUpserting || isLoadingHistory ? (
                 <span className="text-xs text-gray-600">Loading chat…</span>
               ) : null}
@@ -261,7 +298,7 @@ const Message = () => {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 p-4 overflow-y-auto bg-gray-100 scrollbar-hide">
+          <div className="flex-1 p-6 overflow-y-auto scrollbar-hide">
             <div className="space-y-4">
               {messages.map((msg, index) => {
                 const isMe =
@@ -277,14 +314,14 @@ const Message = () => {
                       <img
                         src={selectedContact.profilePicture}
                         alt=""
-                        className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
+                        className="w-8 h-8 rounded-full flex-shrink-0 mb-1 ring-2 ring-white"
                       />
                     )}
                     <div
-                      className={`p-3 rounded-2xl max-w-[75%] break-words ${
+                      className={`px-4 py-3 rounded-2xl max-w-[70%] break-words shadow-sm ${
                         isMe
-                          ? "bg-blue-500 text-white rounded-br-md"
-                          : "bg-white text-gray-900 rounded-bl-md shadow-sm"
+                          ? "bg-blue-600 text-white rounded-br-md"
+                          : "bg-white text-gray-900 rounded-bl-md border border-gray-100"
                       }`}
                     >
                       <p className="text-sm">{msg.text}</p>
@@ -305,7 +342,7 @@ const Message = () => {
                       <img
                         src={userState?.profilePicture}
                         alt={useState?.username}
-                        className="w-8 h-8 rounded-full flex-shrink-0 mb-1"
+                        className="w-8 h-8 rounded-full flex-shrink-0 mb-1 ring-2 ring-white"
                       />
                     )}
                   </div>
@@ -316,9 +353,10 @@ const Message = () => {
           </div>
 
           {/* Input */}
-          <div className="border-t shadow-sm p-4 bg-gray-200">
-            <div className="flex items-center gap-2">
+          <div className="border-t border-gray-100 p-4 bg-white">
+            <div className="flex items-center gap-3">
               <input
+                ref={inputRef}
                 type="text"
                 placeholder="Type a message..."
                 value={input}
@@ -326,11 +364,11 @@ const Message = () => {
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) send();
                 }}
-                className="flex-1 p-3 rounded-full focus:outline-none focus:border-blue-500 bg-white"
+                className="flex-1 px-4 py-3 rounded-full focus:outline-none focus:border-blue-500 bg-gray-50 border border-gray-200"
               />
               <button
                 onClick={send}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-colors"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full transition-colors shadow-sm"
               >
                 Send
               </button>

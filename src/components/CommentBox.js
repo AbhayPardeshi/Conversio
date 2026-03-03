@@ -134,7 +134,7 @@ import { IoMdAttach } from "react-icons/io";
 import { useState, useRef, useEffect } from "react";
 import { useFetch } from "../services/useFetch";
 
-const CommentBox = ({ user, postId, onNewComment }) => {
+const CommentBox = ({ user, postId, onNewComment, parentPostId = null }) => {
   const [commentText, setCommentText] = useState("");
   const [imagePreview, setImagePreview] = useState("");
   const [file, setFile] = useState(null);
@@ -167,6 +167,7 @@ const CommentBox = ({ user, postId, onNewComment }) => {
     formData.append("userId", user.id);
     formData.append("postId", postId);
     formData.append("text", commentText);
+    if (parentPostId) formData.append("parentPostId", parentPostId);
     if (file) formData.append("file", file);
 
     setCommentData({

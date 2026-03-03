@@ -14,7 +14,12 @@ const Navbar = () => {
 
   const location = useLocation();
   const segments = location.pathname.split("/").filter(Boolean);
-  const last = segments[segments.length - 1] || "";
+  const rawLast = segments[segments.length - 1] || "";
+  const isId = /^[a-f0-9]{12,}$/.test(rawLast);
+  let last = isId ? "" : rawLast;
+  if (segments[0] === "post" && isId) {
+    last = "post";
+  }
 
   return (
     <>
@@ -27,7 +32,9 @@ const Navbar = () => {
           />
         </div>
         <div className="flex justify-between w-3/5 px-[1rem]">
-          <span className="text-gray-700 text-[2rem] capitalize">{last}</span>
+          <span className="text-gray-700 text-[2rem] capitalize">
+            {last}
+          </span>
           <div className="flex px-1 py-1 bg-[#f5f7fb] rounded-md r">
             <div className="p-1 text-gray-400 mt-[7px]">
               <AiOutlineSearch size={15} title={"Search"} />
